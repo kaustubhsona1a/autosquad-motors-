@@ -1,0 +1,6 @@
+{
+  "name": "AutoSquad",
+  "description": "AutoSquad is a premium pre-owned car dealership dedicated to delivering quality vehicles, transparent pricing and a hassle-free buying experience. Every vehicle is carefully inspected and selected to ensure complete customer confidence.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
