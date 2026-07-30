@@ -64,7 +64,7 @@ export default function Home() {
 
       {/* Hero Space - Styled with quick action buttons using gold minimalist style */}
       <section className="relative h-[calc(100vh-80px)] min-h-[500px] max-h-[850px] flex flex-col items-start justify-center pb-12 sm:pb-24 overflow-hidden px-3.5 sm:px-12 md:px-16 lg:px-24 text-left z-20">
-        <div className="max-w-5xl w-full relative z-30 flex flex-row items-center justify-start gap-3 sm:gap-6 md:gap-8 flex-wrap sm:flex-nowrap -translate-y-[52%] sm:-translate-y-[25%]">
+        <div className="max-w-5xl w-full relative z-30 flex flex-row items-center justify-start gap-3 sm:gap-6 md:gap-8 flex-wrap sm:flex-nowrap -translate-y-[62%] sm:-translate-y-[15%]">
           
           {/* Logo Hero Branding with Sunshine Type Effect */}
           <div className="sunshine-wrapper relative shrink-0 select-none animate-fade-in my-1">
