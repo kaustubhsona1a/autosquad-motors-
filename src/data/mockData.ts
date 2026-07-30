@@ -92,24 +92,24 @@ export const MOCK_VEHICLES: Vehicle[] = [
 export const MOCK_REVIEWS = [
   {
     id: 1,
-    name: "Rajesh Nair",
+    name: "Karan Malhotra",
     rating: 5,
-    text: "Picked up a 530d M Sport from them last month. If you are an enthusiast, you know how hard it is to find a clean 6-cylinder diesel 5 Series in Maharashtra. Most dealers try to hide accidental history or odometer tampering, but AutoSquad was 100% transparent. Took it to my trusted garage in Kopar Khairane for a checkup, and even they were impressed. Absolute rocket of a car, perfect for my BKC commute via the Freeway.",
-    date: "2 months ago"
+    text: "Bought a 2023 BMW M340i from AutoSquad. Transparent documentation, verified service logs from Infinity Motors, and immaculate car condition. Best luxury car dealership experience in Mumbai!",
+    date: "1 week ago"
   },
   {
     id: 2,
-    name: "Aditya Ranade",
+    name: "Rohan Deshmukh",
     rating: 5,
-    text: "Honestly was a bit skeptical buying a used DCT car, but the AutoSquad team showed me full service records of this Verna Turbo. Got the car delivered to my place in Vashi. The condition is so good, my neighbors still think I bought it brand new. No unnecessary follow-ups or typical dealer drama. Very smooth RTO transfer as well.",
-    date: "1 month ago"
+    text: "Got my Mercedes-AMG C63 delivered to Worli within 48 hours. The team handled all RTO transfer paperwork effortlessly. Absolutely top-tier service!",
+    date: "3 weeks ago"
   },
   {
     id: 3,
-    name: "Amritpal Singh",
+    name: "Siddharth Shah",
     rating: 5,
-    text: "We wanted a clean 7-seater luxury SUV for family trips from Kharghar to Lonavala, and a brand new GLS has a crazy waiting period. Found a 2022 GLS 400d with these guys. Visited their place, did a proper test drive, and closed the deal in 2 days. The car feels solid, no rattles, and they even got the ceramic coating done before delivery. Proper premium experience.",
-    date: "3 weeks ago"
+    text: "Purchased a pristine Range Rover Velar for family trips. Vehicle was inspected thoroughly by my technician and passed with flying colors. Highly recommended!",
+    date: "1 month ago"
   }
 ];
 

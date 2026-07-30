@@ -201,13 +201,13 @@ export default function About() {
             <div className="lg:col-span-7 space-y-10 text-left animate-fade-in">
               <div className="border-l-2 border-[#C8A64A] pl-6 md:pl-8 space-y-4">
                 <p className="text-lg md:text-xl text-white font-serif leading-relaxed italic font-medium">
-                  "AutoSquad was founded in 2019 by Rakshit Bangera and Dipen Shah with one clear vision—to make buying a car an experience people genuinely enjoy."
+                  "AutoSquad was founded in 2019 by Rakshit Bangera and Dipen Shah, backed by over 20 years of collective automotive industry experience, with one clear vision—to make buying a car an experience people genuinely enjoy."
                 </p>
               </div>
 
               <div className="space-y-6 text-zinc-400 font-light text-base md:text-lg leading-relaxed">
                 <p>
-                  Having worked closely with leading automobile brands, we realized that customers deserved better. Better prices than conventional showrooms, shorter waiting periods, honest guidance, and a process that felt effortless from start to finish.
+                  Having spent over 20 years working closely with leading automobile brands across Mumbai, we realized that customers deserved better. Better prices than conventional showrooms, shorter waiting periods, honest guidance, and a process that felt effortless from start to finish.
                 </p>
                 <p className="font-serif text-[#C8A64A] text-lg tracking-wide italic py-2">
                   That's how AutoSquad began.
@@ -246,6 +246,18 @@ export default function About() {
                   </h3>
 
                   <div className="space-y-5">
+                    <div className="flex gap-4">
+                      <div className="w-8 h-8 edgy-card-sm bg-zinc-900 border border-[#D4AF37]/30 flex items-center justify-center shrink-0">
+                        <Award className="w-4 h-4 text-[#D4AF37]" />
+                      </div>
+                      <div>
+                        <h4 className="text-white font-bold text-xs uppercase tracking-wider font-serif">20+ Years Experience</h4>
+                        <p className="text-zinc-400 text-xs font-light mt-1 leading-relaxed">
+                          Over two decades of combined hands-on automotive expertise in luxury procurement, technical diagnostics, and transparent operations.
+                        </p>
+                      </div>
+                    </div>
+
                     <div className="flex gap-4">
                       <div className="w-8 h-8 edgy-card-sm bg-zinc-900 border border-[#D4AF37]/30 flex items-center justify-center shrink-0">
                         <ShieldCheck className="w-4 h-4 text-[#D4AF37]" />

@@ -133,7 +133,7 @@ export default function CustomerLayout() {
         </div>
       )}
 
-      {/* Global Fixed Showcase Background - Full clarity before scroll, dark luxury backdrop when scrolled & on subpages */}
+      {/* Global Fixed Showcase Background - Full clarity with slight dark tint luxury backdrop */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         {(siteConfig.homeHeroImage || siteConfig.homeHeroMobileImage) && (
           <div className="absolute inset-0 overflow-hidden">
@@ -146,41 +146,43 @@ export default function CustomerLayout() {
                 alt="Showroom Background" 
                 className={`w-full h-full object-cover object-center transition-all duration-700 ${
                   isHomePage 
-                    ? (isScrolled ? 'opacity-70 scale-100' : 'opacity-100 scale-100')
-                    : 'opacity-65'
+                    ? (isScrolled ? 'opacity-70 brightness-50 blur-md scale-105' : 'opacity-100 brightness-100 blur-none scale-100')
+                    : 'opacity-65 brightness-45 blur-md scale-105'
                 }`}
               />
             </picture>
-            {/* Pure overlay gradient - invisible on Home hero top so background photo displays with full natural color */}
+            {/* Dark overlay gradient - crystal clear on top, blurred & darkened backdrop when scrolled or on subpages */}
             <div className={`absolute inset-0 transition-all duration-700 ${
               isHomePage 
-                ? (isScrolled ? 'bg-gradient-to-b from-[#02020a]/40 via-[#02020a]/60 to-[#02020a]/90' : 'opacity-0')
-                : 'bg-gradient-to-b from-[#02020a]/40 via-[#02020a]/50 to-[#02020a]/75'
+                ? (isScrolled ? 'bg-gradient-to-b from-[#02020a]/60 via-[#02020a]/75 to-[#02020a]/95' : 'bg-gradient-to-b from-black/20 via-transparent to-[#02020a]/30')
+                : 'bg-gradient-to-b from-[#02020a]/65 via-[#02020a]/80 to-[#02020a]/95'
             }`} />
           </div>
         )}
       </div>
 
       <div className="relative z-10 flex flex-col flex-grow min-h-screen">
-        {/* Main Navbar - Clean transparent header bar */}
+        {/* Main Navbar - Dark Tint Translucent Header Bar */}
         <nav className={`sticky top-0 z-50 border-b transition-all duration-300 ${
           isScrolled 
-            ? 'bg-black/80 backdrop-blur-md border-zinc-800/80 shadow-2xl' 
-            : 'bg-transparent backdrop-blur-sm border-white/10'
+            ? 'bg-black/85 backdrop-blur-md border-zinc-800/80 shadow-2xl' 
+            : 'bg-black/75 backdrop-blur-md border-white/10 shadow-lg'
         }`}>
-          <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-6 md:px-8 py-3 sm:py-3.5 flex justify-between items-center">
+          <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 flex justify-between items-center">
             
-            {/* Left Side: Branding Logo */}
-            <Link to="/" className="flex items-center shrink-0 select-none mr-2 sm:mr-4">
-              {siteConfig.logo ? (
-                <img src={siteConfig.logo} alt="AutoSquad" className="h-8 sm:h-9 md:h-10 lg:h-11 w-auto max-w-[150px] sm:max-w-[190px] object-contain transition-all duration-300" />
-              ) : (
-                <span className="text-lg sm:text-xl font-serif font-bold text-[#d2a353] tracking-widest uppercase">AUTOSQUAD</span>
-              )}
+            {/* Left Side: Branding Text (Slightly smaller with dark tint) */}
+            <Link to="/" className="flex items-center shrink-0 select-none mr-2 sm:mr-4 group">
+              <div className="flex flex-col items-start leading-none">
+                <span className="text-base sm:text-lg md:text-xl font-black italic tracking-wider uppercase font-sans">
+                  <span className="text-zinc-300 group-hover:text-white transition-colors">AUTO</span>
+                  <span className="text-[#b88c3e] group-hover:text-[#d2a353] transition-colors">SQUAD</span>
+                </span>
+                <span className="text-[7px] sm:text-[8px] font-extrabold uppercase tracking-[0.25em] text-zinc-400/90 font-sans mt-0.5">PRE OWNED CARS</span>
+              </div>
             </Link>
 
             {/* Desktop Header Group: Phone | Socials | Location | Nav Items */}
-            <div className="hidden md:flex items-center space-x-3 lg:space-x-5 xl:space-x-7 text-xs sm:text-sm lg:text-base font-sans">
+            <div className="hidden md:flex items-center space-x-3.5 lg:space-x-5 xl:space-x-7 text-xs sm:text-sm lg:text-base font-sans">
               
               {/* Contact & Location Badges */}
               <div className="flex items-center">
@@ -189,26 +191,26 @@ export default function CustomerLayout() {
                   href="tel:+919769699655" 
                   className="flex items-center space-x-1.5 text-white hover:text-[#d2a353] transition-colors duration-200"
                 >
-                  <Phone className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-[#d2a353] stroke-[1.8] shrink-0" />
+                  <Phone className="w-4 h-4 lg:w-4.5 lg:h-4.5 text-[#d2a353] stroke-[1.8] shrink-0" />
                   <span className="font-medium tracking-[0.08em] text-white text-xs lg:text-sm whitespace-nowrap">
                     +91 97696 99655
                   </span>
                 </a>
 
                 {/* Vertical Line Separator with Balanced Margins */}
-                <div className="h-3.5 w-[1px] bg-zinc-600/70 shrink-0 mx-3.5 sm:mx-4 lg:mx-5" />
+                <div className="h-4 w-[1px] bg-zinc-600/70 shrink-0 mx-3.5 sm:mx-4 lg:mx-5" />
 
                 {/* Socials & Location */}
-                <div className="flex items-center space-x-3 lg:space-x-4">
+                <div className="flex items-center space-x-3.5 lg:space-x-4.5">
                   {/* Instagram Icon */}
                   <a 
                     href="https://www.instagram.com/autosquad_cars/" 
                     target="_blank" 
                     rel="noreferrer" 
-                    className="text-zinc-300 hover:text-white transition-colors duration-200 shrink-0 p-0.5"
+                    className="text-zinc-300 hover:text-white transition-colors duration-200 shrink-0 p-1"
                     title="Instagram @autosquad_cars"
                   >
-                    <Instagram className="w-3.5 h-3.5 lg:w-4 lg:h-4 stroke-[1.8]" />
+                    <Instagram className="w-4 h-4 lg:w-4.5 lg:h-4.5 stroke-[1.8]" />
                   </a>
 
                   {/* WhatsApp / Chat Icon */}
@@ -216,10 +218,10 @@ export default function CustomerLayout() {
                     href="https://wa.me/919769699655" 
                     target="_blank" 
                     rel="noreferrer" 
-                    className="text-zinc-300 hover:text-white transition-colors duration-200 shrink-0 p-0.5"
+                    className="text-zinc-300 hover:text-white transition-colors duration-200 shrink-0 p-1"
                     title="WhatsApp Assistant"
                   >
-                    <MessageCircle className="w-3.5 h-3.5 lg:w-4 lg:h-4 stroke-[1.8]" />
+                    <MessageCircle className="w-4 h-4 lg:w-4.5 lg:h-4.5 stroke-[1.8]" />
                   </a>
 
                   {/* Map Pin + MUMBAI */}
@@ -227,9 +229,9 @@ export default function CustomerLayout() {
                     href="https://maps.app.goo.gl/D6y6jmfmthu22fyY9" 
                     target="_blank" 
                     rel="noreferrer" 
-                    className="flex items-center space-x-1 text-zinc-300 hover:text-white transition-colors duration-200 pl-1"
+                    className="flex items-center space-x-1.5 text-zinc-300 hover:text-white transition-colors duration-200 pl-1"
                   >
-                    <MapPin className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-[#d2a353] stroke-[1.8] shrink-0" />
+                    <MapPin className="w-4 h-4 lg:w-4.5 lg:h-4.5 text-[#d2a353] stroke-[1.8] shrink-0" />
                     <span className="font-medium tracking-[0.16em] uppercase text-zinc-300 text-[11px] lg:text-xs whitespace-nowrap">
                       MUMBAI
                     </span>
@@ -273,24 +275,24 @@ export default function CustomerLayout() {
             {/* Mobile Contact Logos & Hamburger Toggle */}
             <div className="flex md:hidden items-center ml-auto">
               {/* Mobile Header Quick Icons */}
-              <div className="flex items-center space-x-2.5 mr-3 sm:mr-4">
+              <div className="flex items-center space-x-2.5 sm:space-x-3.5 mr-2 sm:mr-3">
                 <a href="tel:+919769699655" className="p-1 text-[#d2a353] hover:text-white transition-colors" title="Call Us">
-                  <Phone className="w-4 h-4 stroke-[1.8]" />
+                  <Phone className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[1.8]" />
                 </a>
                 <a href="https://www.instagram.com/autosquad_cars/" target="_blank" rel="noreferrer" className="p-1 text-zinc-300 hover:text-white transition-colors" title="Instagram">
-                  <Instagram className="w-4 h-4 stroke-[1.8]" />
+                  <Instagram className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[1.8]" />
                 </a>
                 <a href="https://wa.me/919769699655" target="_blank" rel="noreferrer" className="p-1 text-zinc-300 hover:text-white transition-colors" title="WhatsApp">
-                  <MessageCircle className="w-4 h-4 stroke-[1.8]" />
+                  <MessageCircle className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[1.8]" />
                 </a>
                 <a href="https://maps.app.goo.gl/D6y6jmfmthu22fyY9" target="_blank" rel="noreferrer" className="p-1 text-[#d2a353] hover:text-white transition-colors" title="Location">
-                  <MapPin className="w-4 h-4 stroke-[1.8]" />
+                  <MapPin className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[1.8]" />
                 </a>
               </div>
 
               {/* Mobile Menu Toggle */}
-              <button className="p-1.5 transition-colors duration-300 focus:outline-none text-zinc-300 hover:text-white" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle menu">
-                {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              <button className="p-1 transition-colors duration-300 focus:outline-none text-zinc-300 hover:text-white" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle menu">
+                {isMenuOpen ? <X className="w-5 h-5 stroke-[1.8]" /> : <Menu className="w-5 h-5 stroke-[1.8]" />}
               </button>
             </div>
 

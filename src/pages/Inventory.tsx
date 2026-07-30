@@ -114,7 +114,7 @@ export default function Inventory() {
   const ALL_FUELS = ['Petrol', 'Diesel', 'Hybrid', 'Electric', 'CNG'];
 
   return (
-    <div className="min-h-screen bg-transparent text-zinc-300 py-12 font-sans z-10 relative">
+    <div className="min-h-screen bg-transparent text-zinc-300 pt-4 pb-12 font-sans z-10 relative">
       <Helmet>
         <title>Collection Showroom | AutoSquad Pre-Owned Cars Mumbai</title>
         <meta name="description" content="Browse AutoSquad's curated collection of certified pre-owned luxury and premium cars in Mumbai. Filter by budget, transmission, fuel type, and mileage." />
@@ -122,10 +122,10 @@ export default function Inventory() {
       <div className="container mx-auto max-w-7xl px-4">
         
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6 border-b border-white/20 pb-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-6 gap-3 border-b border-white/15 pb-4">
           <div>
-            <h1 className="text-4xl font-serif font-bold text-white tracking-widest uppercase">Curated Collection</h1>
-            <p className="text-zinc-400 mt-2 tracking-widest uppercase text-[10px] font-mono font-bold">Explore <span className="text-white">{filteredCars.length}</span> Verified Motorcars in <span className="text-zinc-300">Mumbai</span></p>
+            <h1 className="text-xl sm:text-3xl md:text-4xl font-serif font-bold text-white tracking-wider sm:tracking-widest uppercase whitespace-nowrap">Curated Collection</h1>
+            <p className="text-zinc-400 mt-1 tracking-widest uppercase text-[10px] font-mono font-bold">Explore <span className="text-white">{filteredCars.length}</span> Verified Motorcars in <span className="text-zinc-300">Mumbai</span></p>
           </div>
           
           <div className="w-full md:w-auto font-mono text-xs">
@@ -134,7 +134,7 @@ export default function Inventory() {
               <input 
                 type="text" 
                 placeholder="SEARCH BRAND OR MODEL..." 
-                className="w-full pl-11 pr-4 py-3 md:py-4 bg-white/5 border border-white/25 backdrop-blur-md rounded-xl text-xs tracking-wider uppercase text-zinc-200 placeholder:text-zinc-500 focus:outline-none focus:border-white focus:bg-white/10 transition-all shadow-sm"
+                className="w-full pl-11 pr-4 py-2.5 md:py-3 bg-white/5 border border-white/25 backdrop-blur-md rounded-xl text-xs tracking-wider uppercase text-zinc-200 placeholder:text-zinc-500 focus:outline-none focus:border-white focus:bg-white/10 transition-all shadow-sm"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -143,27 +143,27 @@ export default function Inventory() {
         </div>
 
         {/* Mobile Filter Toggle */}
-        <div className="lg:hidden mb-6 font-mono">
+        <div className="lg:hidden mb-3">
           <button 
             onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
-            className="flex items-center justify-between w-full p-4 bg-zinc-900/60 border border-zinc-800 rounded-xl text-zinc-300 font-bold tracking-wider text-xs uppercase hover:border-white transition-colors shadow-sm"
+            className="flex items-center justify-between w-full px-4 py-2.5 bg-[#0a0a0d]/95 border border-[#D4AF37]/45 rounded-xl text-[#D4AF37] font-serif font-bold tracking-wider text-xs uppercase hover:border-[#D4AF37] transition-all shadow-md"
           >
-            <div className="flex items-center"><Filter className="w-4 h-4 mr-3 text-white" /> Filters and Sort</div>
-            <span className="text-[10px] text-zinc-400 lowercase">{isMobileFiltersOpen ? 'collapse' : 'expand'}</span>
+            <div className="flex items-center"><Filter className="w-4 h-4 mr-2.5 text-[#D4AF37]" /> Filters & Sort</div>
+            <span className="text-[10px] text-zinc-400 font-mono uppercase">{isMobileFiltersOpen ? 'Collapse ▲' : 'Expand ▼'}</span>
           </button>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-10">
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
           {/* Filters Sidebar */}
           <div className={`w-full lg:w-72 flex-shrink-0 ${isMobileFiltersOpen ? 'block' : 'hidden lg:block'}`}>
-            <div className="edgy-card-wrapper sticky top-28">
-              <div className="edgy-card p-8 bg-[#080808]/95 backdrop-blur-xl">
-                <div className="flex items-center justify-between mb-8 pb-4 border-b border-[#D4AF37]/30">
-                  <h3 className="font-serif tracking-widest text-[#D4AF37] flex items-center uppercase text-xs font-bold"><Filter className="w-4 h-4 mr-3 text-[#D4AF37]" /> Filters & Sort</h3>
+            <div className="edgy-card-wrapper lg:sticky lg:top-28">
+              <div className="edgy-card p-5 sm:p-6 bg-[#080808]/95 backdrop-blur-xl">
+                <div className="flex items-center justify-between mb-5 pb-3 border-b border-[#D4AF37]/30">
+                  <h3 className="font-serif tracking-widest text-[#D4AF37] flex items-center uppercase text-xs font-bold"><Filter className="w-4 h-4 mr-2 text-[#D4AF37]" /> Filters & Sort</h3>
                   <button onClick={resetFilters} className="text-[9px] tracking-widest uppercase text-zinc-400 hover:text-[#FCF6BA] transition-colors font-bold font-serif">Reset</button>
                 </div>
                 
-                <div className="space-y-8 text-zinc-300">
+                <div className="space-y-5 sm:space-y-6 text-zinc-300">
                   {/* Sort By */}
                   <div>
                     <h4 className="text-[10px] uppercase tracking-wider text-zinc-400 mb-3 font-bold font-serif border-b border-zinc-800 pb-1.5 flex items-center justify-between">
@@ -323,17 +323,17 @@ export default function Inventory() {
 
           {/* Listing Grid */}
           <div className="flex-1">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
               {loading ? (
                 [1, 2, 3, 4].map((num) => (
-                  <div key={num} className="bg-zinc-900/35 border border-zinc-900/50 rounded-2xl p-6 h-[460px] animate-pulse flex flex-col justify-between">
-                    <div className="w-full h-56 bg-zinc-950/40 rounded-xl mb-6"></div>
-                    <div className="space-y-4 flex-grow">
-                      <div className="h-6 w-2/3 bg-zinc-950/40 rounded-md"></div>
-                      <div className="h-4 w-1/3 bg-zinc-950/40 rounded-md"></div>
-                      <div className="h-5 w-1/2 bg-zinc-950/40 rounded-md mt-4"></div>
+                  <div key={num} className="bg-zinc-900/35 border border-zinc-900/50 rounded-2xl p-4 sm:p-6 h-[380px] sm:h-[460px] animate-pulse flex flex-col justify-between">
+                    <div className="w-full h-44 sm:h-56 bg-zinc-950/40 rounded-xl mb-4 sm:mb-6"></div>
+                    <div className="space-y-3 sm:space-y-4 flex-grow">
+                      <div className="h-5 sm:h-6 w-2/3 bg-zinc-950/40 rounded-md"></div>
+                      <div className="h-3.5 sm:h-4 w-1/3 bg-zinc-950/40 rounded-md"></div>
+                      <div className="h-4 sm:h-5 w-1/2 bg-zinc-950/40 rounded-md mt-3 sm:mt-4"></div>
                     </div>
-                    <div className="h-10 w-full bg-zinc-950/40 rounded-xl mt-6"></div>
+                    <div className="h-9 sm:h-10 w-full bg-zinc-950/40 rounded-xl mt-4 sm:mt-6"></div>
                   </div>
                 ))
               ) : filteredCars.length > 0 ? (
@@ -362,9 +362,9 @@ export default function Inventory() {
                     <Link key={car.id} to={`/inventory/${car.id}`} className="group block h-full">
                       <div className="edgy-card-wrapper h-full">
                         <div className="edgy-card bg-[#080808]/95 backdrop-blur-xl flex flex-col h-full overflow-hidden">
-                          <div className="relative aspect-[4/3] sm:aspect-video md:aspect-auto md:h-64 overflow-hidden bg-zinc-950/40 edgy-card-sm animate-fade-in">
+                          <div className="relative aspect-[16/10] sm:aspect-video md:aspect-auto md:h-64 overflow-hidden bg-zinc-950/40 edgy-card-sm animate-fade-in">
                             <img src={car.images?.[0] || "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=800"} alt={`${car.make} ${car.model}`} loading="lazy" className="w-full h-full object-contain bg-zinc-950/10 transition-transform duration-500 ease-out group-hover:scale-[1.06] opacity-95" />
-                            <div className="absolute top-4 left-4 bg-[#050505]/80 backdrop-blur-md text-[#FCF6BA] border border-[#D4AF37]/40 px-3 py-1 edgy-card-sm text-xs font-bold tracking-widest font-serif shadow-sm">
+                            <div className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-[#050505]/80 backdrop-blur-md text-[#FCF6BA] border border-[#D4AF37]/40 px-2.5 py-0.5 sm:px-3 sm:py-1 edgy-card-sm text-[10px] sm:text-xs font-bold tracking-widest font-serif shadow-sm">
                               {car.year}
                             </div>
                             {car.instagramReel && (
@@ -374,29 +374,29 @@ export default function Inventory() {
                                   e.stopPropagation();
                                   window.open(car.instagramReel, '_blank', 'noopener,noreferrer');
                                 }}
-                                className="absolute top-4 right-4 bg-gradient-to-tr from-[#f58529] via-[#dd2a7b] to-[#8134af] text-white border border-white/20 px-3.5 py-1.5 edgy-card-sm text-[9px] font-bold tracking-widest font-serif shadow-lg shadow-pink-500/20 transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-1.5 z-10"
+                                className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-gradient-to-tr from-[#f58529] via-[#dd2a7b] to-[#8134af] text-white border border-white/20 px-2.5 py-1 sm:px-3.5 sm:py-1.5 edgy-card-sm text-[8px] sm:text-[9px] font-bold tracking-widest font-serif shadow-lg shadow-pink-500/20 transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-1 sm:gap-1.5 z-10"
                               >
-                                <Instagram className="w-3.5 h-3.5" /> WATCH REEL
+                                <Instagram className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> WATCH REEL
                               </button>
                             )}
                           </div>
-                          <div className="p-8 flex-grow flex flex-col justify-between text-zinc-300">
+                          <div className="p-4 sm:p-6 md:p-8 flex-grow flex flex-col justify-between text-zinc-300">
                             <div>
-                              <div className="mb-4 text-center">
-                                <h3 className="text-xl font-serif font-bold text-white group-hover:text-[#FCF6BA] transition-colors mb-2">{car.make} <span className="font-light text-zinc-400">{car.model}</span></h3>
-                                <p className="text-[10px] tracking-[0.2em] uppercase text-[#D4AF37] font-serif font-bold">{car.variant}</p>
+                              <div className="mb-2 sm:mb-4 text-center">
+                                <h3 className="text-lg sm:text-xl font-serif font-bold text-white group-hover:text-[#FCF6BA] transition-colors mb-1 sm:mb-2">{car.make} <span className="font-light text-zinc-400">{car.model}</span></h3>
+                                <p className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-[#D4AF37] font-serif font-bold">{car.variant}</p>
                               </div>
-                              <div className="text-2xl font-bold text-center text-[#FCF6BA] mb-6 pb-6 border-b border-zinc-800 font-serif">{formatPrice(car.price)}</div>
+                              <div className="text-xl sm:text-2xl font-bold text-center text-[#FCF6BA] mb-3 pb-3 sm:mb-6 sm:pb-6 border-b border-zinc-800 font-serif">{formatPrice(car.price)}</div>
                             </div>
                             
                             <div>
-                              <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs md:text-sm font-semibold text-zinc-300 mb-6 font-sans">
-                                <div className="flex items-center"><Gauge className="w-4 h-4 mr-1.5 text-[#D4AF37]" /> {car.mileage.toLocaleString()} KM</div>
-                                <div className="flex items-center"><Fuel className="w-4 h-4 mr-1.5 text-[#D4AF37]" /> {car.fuelType}</div>
-                                <div className="flex items-center"><Cog className="w-4 h-4 mr-1.5 text-[#D4AF37]" /> {car.transmission}</div>
+                              <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5 sm:gap-x-5 sm:gap-y-2 text-[11px] sm:text-xs md:text-sm font-semibold text-zinc-300 mb-3.5 sm:mb-6 font-sans">
+                                <div className="flex items-center"><Gauge className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5 text-[#D4AF37]" /> {car.mileage.toLocaleString()} KM</div>
+                                <div className="flex items-center"><Fuel className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5 text-[#D4AF37]" /> {car.fuelType}</div>
+                                <div className="flex items-center"><Cog className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5 text-[#D4AF37]" /> {car.transmission}</div>
                               </div>
                               
-                              <div className="w-full uppercase tracking-widest text-[#050505] text-[10px] font-bold text-center py-3 bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] group-hover:brightness-110 transition-all duration-300 edgy-card-sm font-serif">
+                              <div className="w-full uppercase tracking-widest text-[#050505] text-[9px] sm:text-[10px] font-bold text-center py-2 sm:py-3 bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] group-hover:brightness-110 transition-all duration-300 edgy-card-sm font-serif">
                                 Explore specs & registry ↗
                               </div>
                             </div>
