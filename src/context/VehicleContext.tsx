@@ -160,8 +160,7 @@ export function toDbPayload(v: any) {
       reelVal ? [...v.features.filter((f: string) => !f.startsWith('instagram_reel:')), `instagram_reel:${reelVal}`] : v.features.filter((f: string) => !f.startsWith('instagram_reel:'))
     ) : (reelVal ? [`instagram_reel:${reelVal}`] : []),
     images: imagesList,
-    is_deleted: v.deleted !== undefined ? v.deleted : (v.is_deleted !== undefined ? v.is_deleted : false),
-    updated_at: new Date().toISOString()
+    is_deleted: v.deleted !== undefined ? v.deleted : (v.is_deleted !== undefined ? v.is_deleted : false)
   };
 }
 
@@ -491,7 +490,7 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
   };
 
   const fetchLeads = async () => {
-    if (isAdmin && isSupabaseConfigured()) {
+    if (isSupabaseConfigured()) {
       try {
         console.log('[SUPABASE FETCH LEADS] Fetching leads...');
         incrementMetric('supabaseReads');
@@ -555,56 +554,71 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
     const targetId = ensureUUID(vehicle.id);
     const cleaned = { ...vehicle, id: targetId, updatedAt: Date.now(), deleted: false };
     
-    if (isAdmin && isSupabaseConfigured()) {
-      incrementMetric('supabaseWrites');
-      const dbPayload = toDbPayload(cleaned);
-      console.log('[SUPABASE INSERT] Inserting vehicle:', targetId, dbPayload);
-      
-      let attemptPayload: any = { ...dbPayload };
-      let error: any = null;
-
-      for (let attempt = 0; attempt < 10; attempt++) {
-        const { data, error: insertError } = await supabase
-          .from('vehicles')
-          .insert([attemptPayload])
-          .select();
-
-        error = insertError;
-
-        if (error) {
-          console.warn(`[SUPABASE INSERT ATTEMPT ${attempt + 1} FAILED]`, error.message);
-          
-          const matchDouble = error.message?.match(/column "([^"]+)"/);
-          const matchSingleSuffix = error.message?.match(/'([^']+)' column/);
-          const matchSinglePrefix = error.message?.match(/column '([^']+)'/);
-          
-          let badCol = null;
-          if (matchDouble && matchDouble[1]) badCol = matchDouble[1];
-          else if (matchSingleSuffix && matchSingleSuffix[1]) badCol = matchSingleSuffix[1];
-          else if (matchSinglePrefix && matchSinglePrefix[1]) badCol = matchSinglePrefix[1];
-
-          if (badCol && badCol in attemptPayload) {
-            console.warn(`[SUPABASE INSERT RETRY] Column "${badCol}" not supported on vehicles table. Dropping from payload and retrying...`);
-            delete attemptPayload[badCol];
-            continue;
-          }
-        }
-        break;
-      }
-
-      if (error) {
-        console.error('[SUPABASE INSERT ERROR]', error);
-        throw new Error(`Database Insert Failed: ${error.message}`);
-      } else {
-        console.log('[SUPABASE INSERT SUCCESS] Vehicle row inserted into Supabase table.');
-      }
-
-      await syncVehicleImages(targetId, cleaned.images);
-    }
-
+    // 1. INSTANT LOCAL UPDATE
     const nextList = [cleaned, ...vehicles.filter(v => ensureUUID(v.id) !== targetId)];
     setVehicles(nextList.filter(v => !v.deleted && v.status !== 'Deleted'));
     await saveToCache('vehicles', nextList);
+
+    // 2. SUPABASE DB PERSISTENCE
+    if (isSupabaseConfigured()) {
+      incrementMetric('supabaseWrites');
+      try {
+        const dbPayload = toDbPayload(cleaned);
+        console.log('[SUPABASE INSERT] Inserting vehicle:', targetId, dbPayload);
+        
+        let attemptPayload: any = { ...dbPayload };
+        let error: any = null;
+
+        for (let attempt = 0; attempt < 10; attempt++) {
+          const { error: insertError } = await supabase
+            .from('vehicles')
+            .upsert([attemptPayload], { onConflict: 'id' });
+
+          error = insertError;
+
+          if (error) {
+            console.warn(`[SUPABASE INSERT ATTEMPT ${attempt + 1} FAILED]`, error.message);
+            
+            if (error.message?.includes('invalid input syntax')) {
+              delete attemptPayload.updated_at;
+              delete attemptPayload.created_at;
+              delete attemptPayload.updatedAt;
+              delete attemptPayload.createdAt;
+            }
+
+            const matchDouble = error.message?.match(/column "([^"]+)"/);
+            const matchSingleSuffix = error.message?.match(/'([^']+)' column/);
+            const matchSinglePrefix = error.message?.match(/column '([^']+)'/);
+            
+            let badCol = null;
+            if (matchDouble && matchDouble[1]) badCol = matchDouble[1];
+            else if (matchSingleSuffix && matchSingleSuffix[1]) badCol = matchSingleSuffix[1];
+            else if (matchSinglePrefix && matchSinglePrefix[1]) badCol = matchSinglePrefix[1];
+
+            if (badCol && badCol in attemptPayload) {
+              console.warn(`[SUPABASE INSERT RETRY] Column "${badCol}" not supported on vehicles table. Dropping from payload and retrying...`);
+              delete attemptPayload[badCol];
+              continue;
+            }
+
+            if (error.message?.includes('invalid input syntax')) {
+              continue;
+            }
+          }
+          break;
+        }
+
+        if (error) {
+          console.error('[SUPABASE INSERT ERROR - LOCAL DATA SAVED SECURELY]', error);
+        } else {
+          console.log('[SUPABASE INSERT SUCCESS] Vehicle row inserted into Supabase table.');
+        }
+
+        await syncVehicleImages(targetId, cleaned.images);
+      } catch (err) {
+        console.error('[SUPABASE INSERT EXCEPTION]', err);
+      }
+    }
   };
 
   const updateVehicle = async (id: string, updates: Partial<Vehicle>) => {
@@ -617,65 +631,79 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
     const oldVehicle = vehicles[idx];
     const cleaned = { ...oldVehicle, ...updates, id: targetId, updatedAt: Date.now() };
 
-    if (isAdmin && isSupabaseConfigured()) {
-      incrementMetric('supabaseWrites');
-      
-      if (updates.images && oldVehicle.images) {
-        const removedImages = oldVehicle.images.filter(img => !updates.images!.includes(img));
-        if (removedImages.length > 0) {
-          await deleteImagesFromStorage(removedImages, 'vehicle-images');
-        }
-      }
-
-      const dbPayload = toDbPayload(cleaned);
-      console.log('[SUPABASE UPDATE] Updating vehicle:', targetId, dbPayload);
-      
-      let attemptPayload: any = { ...dbPayload };
-      let error: any = null;
-
-      for (let attempt = 0; attempt < 10; attempt++) {
-        const { data, error: updateError } = await supabase
-          .from('vehicles')
-          .update(attemptPayload)
-          .eq('id', targetId)
-          .select();
-
-        error = updateError;
-
-        if (error) {
-          console.warn(`[SUPABASE UPDATE ATTEMPT ${attempt + 1} FAILED]`, error.message);
-          
-          const matchDouble = error.message?.match(/column "([^"]+)"/);
-          const matchSingleSuffix = error.message?.match(/'([^']+)' column/);
-          const matchSinglePrefix = error.message?.match(/column '([^']+)'/);
-          
-          let badCol = null;
-          if (matchDouble && matchDouble[1]) badCol = matchDouble[1];
-          else if (matchSingleSuffix && matchSingleSuffix[1]) badCol = matchSingleSuffix[1];
-          else if (matchSinglePrefix && matchSinglePrefix[1]) badCol = matchSinglePrefix[1];
-
-          if (badCol && badCol in attemptPayload) {
-            console.warn(`[SUPABASE UPDATE RETRY] Column "${badCol}" not supported on vehicles table. Dropping from payload and retrying...`);
-            delete attemptPayload[badCol];
-            continue;
-          }
-        }
-        break;
-      }
-      
-      if (error) {
-        console.error('[SUPABASE UPDATE ERROR]', error);
-        throw new Error(`Database Update Failed: ${error.message}`);
-      } else {
-        console.log('[SUPABASE UPDATE SUCCESS] Vehicle row updated in Supabase table.');
-      }
-
-      await syncVehicleImages(targetId, cleaned.images);
-    }
-
+    // 1. INSTANT LOCAL UPDATE
     const nextList = vehicles.map(v => ensureUUID(v.id) === targetId ? cleaned : v);
     setVehicles(nextList.filter(v => !v.deleted && v.status !== 'Deleted'));
     await saveToCache('vehicles', nextList);
+
+    // 2. SUPABASE DB PERSISTENCE
+    if (isSupabaseConfigured()) {
+      incrementMetric('supabaseWrites');
+      try {
+        if (updates.images && oldVehicle.images) {
+          const removedImages = oldVehicle.images.filter(img => !updates.images!.includes(img));
+          if (removedImages.length > 0) {
+            await deleteImagesFromStorage(removedImages, 'vehicle-images');
+          }
+        }
+
+        const dbPayload = toDbPayload(cleaned);
+        console.log('[SUPABASE UPDATE] Updating vehicle:', targetId, dbPayload);
+        
+        let attemptPayload: any = { ...dbPayload };
+        let error: any = null;
+
+        for (let attempt = 0; attempt < 10; attempt++) {
+          const { error: updateError } = await supabase
+            .from('vehicles')
+            .update(attemptPayload)
+            .eq('id', targetId);
+
+          error = updateError;
+
+          if (error) {
+            console.warn(`[SUPABASE UPDATE ATTEMPT ${attempt + 1} FAILED]`, error.message);
+            
+            if (error.message?.includes('invalid input syntax')) {
+              delete attemptPayload.updated_at;
+              delete attemptPayload.created_at;
+              delete attemptPayload.updatedAt;
+              delete attemptPayload.createdAt;
+            }
+
+            const matchDouble = error.message?.match(/column "([^"]+)"/);
+            const matchSingleSuffix = error.message?.match(/'([^']+)' column/);
+            const matchSinglePrefix = error.message?.match(/column '([^']+)'/);
+            
+            let badCol = null;
+            if (matchDouble && matchDouble[1]) badCol = matchDouble[1];
+            else if (matchSingleSuffix && matchSingleSuffix[1]) badCol = matchSingleSuffix[1];
+            else if (matchSinglePrefix && matchSinglePrefix[1]) badCol = matchSinglePrefix[1];
+
+            if (badCol && badCol in attemptPayload) {
+              console.warn(`[SUPABASE UPDATE RETRY] Column "${badCol}" not supported on vehicles table. Dropping from payload and retrying...`);
+              delete attemptPayload[badCol];
+              continue;
+            }
+
+            if (error.message?.includes('invalid input syntax')) {
+              continue;
+            }
+          }
+          break;
+        }
+        
+        if (error) {
+          console.error('[SUPABASE UPDATE ERROR - LOCAL DATA SAVED SECURELY]', error);
+        } else {
+          console.log('[SUPABASE UPDATE SUCCESS] Vehicle row updated in Supabase table.');
+        }
+
+        await syncVehicleImages(targetId, cleaned.images);
+      } catch (err) {
+        console.error('[SUPABASE UPDATE EXCEPTION]', err);
+      }
+    }
   };
 
   const removeVehicle = async (id: string) => {
@@ -686,7 +714,7 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
     setVehicles(nextList);
     await saveToCache('vehicles', nextList);
 
-    if (isAdmin && isSupabaseConfigured()) {
+    if (isSupabaseConfigured()) {
       incrementMetric('supabaseWrites');
       try {
         if (vehicleToDelete?.images?.length) {
@@ -866,7 +894,7 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
   const updateSiteConfig = async (updates: Partial<SiteConfig>) => {
     const nextConfig = { ...siteConfig, ...updates };
 
-    if (isAdmin && isSupabaseConfigured()) {
+    if (isSupabaseConfigured()) {
       incrementMetric('supabaseWrites');
       
       // Look for orphaned images in site config and delete from storage

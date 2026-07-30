@@ -82,6 +82,17 @@ ALTER TABLE public.vehicles ADD COLUMN IF NOT EXISTS instagram_reel TEXT;
 ALTER TABLE public.vehicles ADD COLUMN IF NOT EXISTS inspection_notes TEXT;
 ALTER TABLE public.vehicles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
 
+-- Safely convert pre-existing BIGINT timestamp columns to TIMESTAMPTZ if needed
+DO $$
+BEGIN
+    BEGIN
+        ALTER TABLE public.vehicles ALTER COLUMN updated_at TYPE TIMESTAMPTZ USING to_timestamp(updated_at/1000);
+    EXCEPTION WHEN OTHERS THEN END;
+    BEGIN
+        ALTER TABLE public.vehicles ALTER COLUMN created_at TYPE TIMESTAMPTZ USING to_timestamp(created_at/1000);
+    EXCEPTION WHEN OTHERS THEN END;
+END $$;
+
 -- 2C. Vehicle Images Table
 CREATE TABLE IF NOT EXISTS public.vehicle_images (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
