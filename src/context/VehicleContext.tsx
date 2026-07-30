@@ -127,7 +127,7 @@ export function ensureUUID(id: string): string {
   return `${part1}-${part2}-${part3}-${part4}-${part5}`.toLowerCase();
 }
 
-// Convert a vehicle object into a database payload matching schema.sql's columns exactly
+// Convert a vehicle object into a database payload matching schema.sql's core columns exactly
 export function toDbPayload(v: any) {
   const reelVal = v.instagramReel || v.instagram_reel || null;
   const imagesList = Array.isArray(v.images) ? v.images.filter(Boolean) : [];
@@ -139,23 +139,17 @@ export function toDbPayload(v: any) {
     variant: v.variant || null,
     year: typeof v.year === 'number' ? v.year : Number(v.year || new Date().getFullYear()),
     price: typeof v.price === 'number' ? v.price : Number(v.price || 0),
-    original_price: v.originalPrice || v.original_price || null,
     mileage: typeof v.mileage === 'number' ? v.mileage : Number(v.mileage || 0),
-    km_driven: typeof v.mileage === 'number' ? v.mileage : Number(v.mileage || 0),
     fuel_type: v.fuelType || v.fuel_type || 'Petrol',
     transmission: v.transmission || 'Automatic',
     engine: v.engine || null,
     color: v.color || null,
     ownership: v.ownership || null,
-    owner_number: v.ownership || v.owner_number || null,
     registration: v.registration || null,
-    registration_state: v.registration || v.registration_state || null,
     status: v.status || 'Available',
     featured: v.featured !== undefined ? v.featured : false,
-    sold: v.status === 'Sold' || v.sold === true,
     description: v.description || null,
     instagram_reel: reelVal,
-    inspection_notes: v.inspection_notes || v.inspectionNotes || null,
     features: Array.isArray(v.features) ? (
       reelVal ? [...v.features.filter((f: string) => !f.startsWith('instagram_reel:')), `instagram_reel:${reelVal}`] : v.features.filter((f: string) => !f.startsWith('instagram_reel:'))
     ) : (reelVal ? [`instagram_reel:${reelVal}`] : []),
