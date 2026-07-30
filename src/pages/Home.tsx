@@ -63,19 +63,23 @@ export default function Home() {
       </Helmet>
 
       {/* Hero Space - Styled with quick action buttons using gold minimalist style */}
-      <section className="relative h-[calc(100vh-80px)] min-h-[480px] max-h-[820px] flex flex-col items-start justify-center pb-12 sm:pb-24 overflow-hidden px-6 sm:px-12 md:px-16 lg:px-24 text-left z-20">
-        <div className="max-w-3xl w-full relative z-30 flex flex-col items-start text-left -translate-y-[38%] sm:-translate-y-[15%]">
+      <section className="relative h-[calc(100vh-80px)] min-h-[500px] max-h-[850px] flex flex-col items-start justify-center pb-12 sm:pb-24 overflow-hidden px-3.5 sm:px-12 md:px-16 lg:px-24 text-left z-20">
+        <div className="max-w-5xl w-full relative z-30 flex flex-row items-center justify-start gap-3 sm:gap-6 md:gap-8 flex-wrap sm:flex-nowrap -translate-y-[52%] sm:-translate-y-[25%]">
           
-          {/* Logo Hero Branding */}
-          <div className="mb-6 sm:mb-8 flex flex-col items-start justify-start select-none animate-fade-in w-full">
+          {/* Logo Hero Branding with Sunshine Type Effect */}
+          <div className="sunshine-wrapper relative shrink-0 select-none animate-fade-in my-1">
+            {/* Sunshine background glow & rotating sunbeams */}
+            <div className="sunshine-glow-bg" />
+            <div className="sunshine-rays" />
+
             {siteConfig.logo ? (
               <img 
                 src={siteConfig.logo} 
                 alt="AutoSquad Pre Owned Cars" 
-                className="w-auto max-w-[85vw] sm:max-w-[480px] md:max-w-[560px] max-h-[160px] sm:max-h-[220px] md:max-h-[260px] lg:max-h-[300px] object-contain filter drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)]" 
+                className="relative z-10 w-auto max-w-[60vw] sm:max-w-[440px] md:max-w-[540px] lg:max-w-[600px] max-h-[135px] sm:max-h-[210px] md:max-h-[260px] lg:max-h-[300px] object-contain filter drop-shadow-[0_0_25px_rgba(255,215,0,0.5)] drop-shadow-[0_10px_30px_rgba(0,0,0,0.95)]" 
               />
             ) : (
-              <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-[6.8rem] font-black italic tracking-tight sm:tracking-normal uppercase font-sans drop-shadow-[0_8px_24px_rgba(0,0,0,0.9)] leading-none flex items-center justify-start">
+              <h1 className="relative z-10 text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-[6.8rem] font-black italic tracking-tight sm:tracking-normal uppercase font-sans drop-shadow-[0_8px_24px_rgba(0,0,0,0.9)] leading-none flex items-center justify-start">
                 <span className="text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-100 to-zinc-400">
                   AUTO
                 </span>
@@ -86,17 +90,16 @@ export default function Home() {
             )}
           </div>
 
-          <div className="relative z-30 flex flex-col sm:flex-row items-start justify-start gap-3.5 sm:gap-5 w-full">
-            {/* Browse Inventory Diamond Button */}
-            <div className="diamond-btn-wrapper w-[175px] sm:w-[200px] h-[38px] sm:h-[42px] group shrink-0">
-              <Link 
-                to="/inventory" 
-                className="diamond-btn-content text-[#D4AF37] hover:text-[#FCF6BA] font-bold tracking-[0.14em] uppercase text-[10px] sm:text-xs font-serif px-3 flex items-center justify-center whitespace-nowrap text-center"
-              >
-                <span className="whitespace-nowrap">Browse Inventory</span>
-              </Link>
-            </div>
+          {/* Browse Inventory Diamond Button (Positioned adjacent to logo on mobile & desktop) */}
+          <div className="diamond-btn-wrapper w-[145px] sm:w-[195px] md:w-[215px] h-[38px] sm:h-[42px] group shrink-0 relative z-30 my-1">
+            <Link 
+              to="/inventory" 
+              className="diamond-btn-content text-[#D4AF37] hover:text-[#FCF6BA] font-bold tracking-[0.11em] sm:tracking-[0.14em] uppercase text-[10px] sm:text-xs font-serif px-2.5 sm:px-3 flex items-center justify-center whitespace-nowrap text-center"
+            >
+              <span className="whitespace-nowrap">Browse Inventory</span>
+            </Link>
           </div>
+
         </div>
       </section>
 
