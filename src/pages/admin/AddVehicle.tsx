@@ -153,11 +153,15 @@ export default function AdminAddVehicle() {
 
 
   const [isSaving, setIsSaving] = useState(false);
+  const [saveNotification, setSaveNotification] = useState<{ message: string; type: 'info' | 'success' | 'error' } | null>(null);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (isSaving) return; // Prevent multiple clicks/uploads
+    
     formSaved.current = true;
     setIsSaving(true);
+    setSaveNotification({ message: isEditing ? 'Saving changes to database...' : 'Adding vehicle to inventory...', type: 'info' });
     
     try {
       if (isEditing && id) {
@@ -202,11 +206,13 @@ export default function AdminAddVehicle() {
         await addVehicle(newVehicle);
       }
       
-      navigate('/dealer-management/inventory');
+      setSaveNotification({ message: 'Vehicle saved successfully!', type: 'success' });
+      setTimeout(() => {
+        navigate('/dealer-management/inventory');
+      }, 400);
     } catch (err: any) {
       console.error('Failed to save vehicle:', err);
-      alert('Failed to save vehicle: ' + (err.message || String(err)));
-    } finally {
+      setSaveNotification({ message: 'Failed to save vehicle: ' + (err.message || String(err)), type: 'error' });
       setIsSaving(false);
     }
   };
@@ -226,9 +232,48 @@ export default function AdminAddVehicle() {
           <Link to="/dealer-management/inventory" className="flex-grow sm:flex-grow-0 text-center px-4 sm:px-5 py-3.5 bg-zinc-900/40 border border-white/5 text-zinc-300 hover:text-white hover:bg-zinc-800/50 rounded-xl text-xs font-bold tracking-widest font-mono uppercase transition-all">
             Cancel
           </Link>
-          <button type="submit" className="flex-grow sm:flex-grow-0 text-center px-4 sm:px-6 py-3.5 bg-white hover:bg-zinc-900 text-zinc-950 hover:text-white border border-transparent hover:border-white/20 rounded-xl text-xs font-bold tracking-widest font-mono uppercase transition-all shadow-sm">{isEditing ? 'Save Changes' : 'Save Vehicle'}</button>
+          <button 
+            type="submit" 
+            disabled={isSaving || isCompressing}
+            className="flex-grow sm:flex-grow-0 inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-3.5 bg-white hover:bg-zinc-200 text-zinc-950 disabled:bg-zinc-800 disabled:text-zinc-500 disabled:cursor-not-allowed border border-transparent rounded-xl text-xs font-bold tracking-widest font-mono uppercase transition-all shadow-sm cursor-pointer"
+          >
+            {isSaving ? (
+              <>
+                <svg className="animate-spin h-4 w-4 text-zinc-950 shrink-0" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                </svg>
+                <span>Saving...</span>
+              </>
+            ) : isEditing ? 'Save Changes' : 'Save Vehicle'}
+          </button>
         </div>
       </div>
+
+      {/* Notification status banner */}
+      {saveNotification && (
+        <div className={`p-4 rounded-xl border flex items-center justify-between text-xs font-mono tracking-wider font-bold animate-fade-in ${
+          saveNotification.type === 'info' ? 'bg-amber-500/10 border-amber-500/30 text-amber-300' :
+          saveNotification.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300' :
+          'bg-rose-500/10 border-rose-500/30 text-rose-300'
+        }`}>
+          <div className="flex items-center gap-2.5">
+            {saveNotification.type === 'info' && (
+              <svg className="animate-spin h-4 w-4 text-amber-300 shrink-0" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+              </svg>
+            )}
+            {saveNotification.type === 'success' && (
+              <span className="text-emerald-400 font-bold">✓</span>
+            )}
+            {saveNotification.type === 'error' && (
+              <span className="text-rose-400 font-bold">✕</span>
+            )}
+            <span>{saveNotification.message}</span>
+          </div>
+        </div>
+      )}
 
       <div className="bg-zinc-950/65 backdrop-blur-md p-4 sm:p-6 md:p-8 rounded-2xl border border-white/5 shadow-2xl space-y-8 text-zinc-300">
         

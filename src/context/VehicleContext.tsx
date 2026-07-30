@@ -231,7 +231,7 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
     }));
   };
 
-  const fetchInventory = async () => {
+  const fetchInventory = async (bypassCache?: boolean) => {
     const normalizeVehicles = (list: any[]) => {
       return list.map(v => {
         if (!v) return null;
@@ -441,28 +441,25 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
             await saveToCache('site_config', parsedConfig);
           }
 
-          if (remoteVersion > localVersion || !cachedVehicles || cachedVehicles.length === 0) {
-            incrementMetric('cacheMisses');
-            incrementMetric('supabaseReads');
-            const { data, error } = await supabase.from('vehicles').select('*, vehicle_images(*)');
-            if (!error && data) {
-              if (data.length > 0) {
-                const normalized = normalizeVehicles(data);
-                const filtered = normalized.filter(v => !v.deleted && v.status !== 'Deleted');
-                setVehicles(filtered);
-                await saveToCache('vehicles', normalized);
-                await saveToCache('vehicles_version', remoteVersion);
-              } else {
-                setVehicles([]);
-              }
-            } else if (error) {
-              console.warn('Supabase query failed, keeping cache/empty fallback', error);
-              if (!hasMountedCache) {
-                setVehicles([]);
-              }
+          // Always fetch fresh vehicles from Supabase in background to guarantee both mobile and desktop stay in sync
+          incrementMetric('supabaseReads');
+          const { data, error } = await supabase.from('vehicles').select('*, vehicle_images(*)');
+          if (!error && data) {
+            if (data.length > 0) {
+              const normalized = normalizeVehicles(data);
+              const filtered = normalized.filter(v => !v.deleted && v.status !== 'Deleted');
+              setVehicles(filtered);
+              await saveToCache('vehicles', normalized);
+              await saveToCache('vehicles_version', remoteVersion || Date.now());
+            } else {
+              setVehicles([]);
+              await saveToCache('vehicles', []);
             }
-          } else {
-            incrementMetric('cacheHits');
+          } else if (error) {
+            console.warn('Supabase query failed, keeping cache fallback', error);
+            if (!hasMountedCache) {
+              setVehicles([]);
+            }
           }
         } catch (err) {
           console.warn('Background Supabase revalidation failed, keeping cache/empty', err);
@@ -542,6 +539,17 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     fetchInventory();
     fetchLeads();
+
+    const handleSync = () => {
+      fetchInventory(true);
+    };
+
+    window.addEventListener('inventory_updated', handleSync);
+    window.addEventListener('storage', handleSync);
+    return () => {
+      window.removeEventListener('inventory_updated', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
   }, [isAdmin]);
 
   const addVehicle = async (vehicle: Vehicle) => {
@@ -552,6 +560,7 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
     const nextList = [cleaned, ...vehicles.filter(v => ensureUUID(v.id) !== targetId)];
     setVehicles(nextList.filter(v => !v.deleted && v.status !== 'Deleted'));
     await saveToCache('vehicles', nextList);
+    window.dispatchEvent(new Event('inventory_updated'));
 
     // 2. SUPABASE DB PERSISTENCE
     if (isSupabaseConfigured()) {
@@ -629,6 +638,7 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
     const nextList = vehicles.map(v => ensureUUID(v.id) === targetId ? cleaned : v);
     setVehicles(nextList.filter(v => !v.deleted && v.status !== 'Deleted'));
     await saveToCache('vehicles', nextList);
+    window.dispatchEvent(new Event('inventory_updated'));
 
     // 2. SUPABASE DB PERSISTENCE
     if (isSupabaseConfigured()) {

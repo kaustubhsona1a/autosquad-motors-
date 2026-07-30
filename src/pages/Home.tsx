@@ -45,7 +45,7 @@ const CARD_THEMES = [
 
 export default function Home() {
   const { vehicles, siteConfig, loading } = useVehicles();
-  const featuredCars = vehicles.filter(v => v.status === 'Available').slice(0, 3);
+  const featuredCars = vehicles.filter(v => !v.deleted && (v.status?.toLowerCase() === 'available' || !v.status)).slice(0, 3);
   
   const siteUrl = "https://instagram.com/autosquad_cars";
   const defaultDesc = "AutoSquad | Explore premium pre-owned vehicles at Mumbai's premier enthusiast showroom. Quality inventory, transparent pricing and an enthusiast-focused buying experience.";

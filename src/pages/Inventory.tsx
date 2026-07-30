@@ -31,7 +31,7 @@ export default function Inventory() {
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
   const filteredCars = useMemo(() => {
-    let result = vehicles.filter(car => car.status === 'Available');
+    let result = vehicles.filter(car => !car.deleted && (car.status?.toLowerCase() === 'available' || !car.status));
     
     // Search filter
     if (searchTerm) {
@@ -114,7 +114,7 @@ export default function Inventory() {
   const ALL_FUELS = ['Petrol', 'Diesel', 'Hybrid', 'Electric', 'CNG'];
 
   return (
-    <div className="min-h-screen bg-transparent text-zinc-300 pt-4 pb-12 font-sans z-10 relative">
+    <div className="min-h-screen bg-transparent text-zinc-300 pt-5 sm:pt-8 md:pt-10 pb-16 font-sans z-10 relative">
       <Helmet>
         <title>Collection Showroom | AutoSquad Pre-Owned Cars Mumbai</title>
         <meta name="description" content="Browse AutoSquad's curated collection of certified pre-owned luxury and premium cars in Mumbai. Filter by budget, transmission, fuel type, and mileage." />
@@ -156,7 +156,7 @@ export default function Inventory() {
         <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
           {/* Filters Sidebar */}
           <div className={`w-full lg:w-72 flex-shrink-0 ${isMobileFiltersOpen ? 'block' : 'hidden lg:block'}`}>
-            <div className="edgy-card-wrapper lg:sticky lg:top-28">
+            <div className="edgy-card-wrapper lg:sticky lg:top-20">
               <div className="edgy-card p-5 sm:p-6 bg-[#080808]/95 backdrop-blur-xl">
                 <div className="flex items-center justify-between mb-5 pb-3 border-b border-[#D4AF37]/30">
                   <h3 className="font-serif tracking-widest text-[#D4AF37] flex items-center uppercase text-xs font-bold"><Filter className="w-4 h-4 mr-2 text-[#D4AF37]" /> Filters & Sort</h3>
