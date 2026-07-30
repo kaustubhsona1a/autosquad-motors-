@@ -23,56 +23,65 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isAdmin, setIsAdmin] = useState(true); // Open access until Supabase integration
-  const [loading, setLoading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState<boolean>(() => {
+    return localStorage.getItem('autosquad_dealer_auth') === 'true';
+  });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check active session if available
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkAdminRole(session.user.id);
-      } else {
-        setIsAdmin(true); // Keep dealer portal accessible
-        setLoading(false);
+    let isMounted = true;
+
+    async function checkSession() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          if (isMounted) {
+            setUser(session.user);
+            setIsAdmin(true);
+            localStorage.setItem('autosquad_dealer_auth', 'true');
+          }
+        } else {
+          const storedAuth = localStorage.getItem('autosquad_dealer_auth') === 'true';
+          if (isMounted) {
+            setIsAdmin(storedAuth);
+          }
+        }
+      } catch (e) {
+        const storedAuth = localStorage.getItem('autosquad_dealer_auth') === 'true';
+        if (isMounted) {
+          setIsAdmin(storedAuth);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
-    }).catch(() => {
-      setIsAdmin(true);
-      setLoading(false);
-    });
+    }
+
+    checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
       if (session?.user) {
-        checkAdminRole(session.user.id);
-      } else {
-        setIsAdmin(true); // Keep dealer portal accessible
-        setLoading(false);
+        setUser(session.user);
+        setIsAdmin(true);
+        localStorage.setItem('autosquad_dealer_auth', 'true');
+      } else if (_event === 'SIGNED_OUT') {
+        setUser(null);
+        setIsAdmin(false);
+        localStorage.removeItem('autosquad_dealer_auth');
       }
+      setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
-
-  const checkAdminRole = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('admins')
-        .select('role')
-        .eq('id', userId)
-        .single();
-      
-      setIsAdmin(true); // Always allow access for now
-    } catch (e) {
-      console.error('Failed to check admin role', e);
-      setIsAdmin(true);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const loginAsDealer = () => {
     setIsAdmin(true);
+    localStorage.setItem('autosquad_dealer_auth', 'true');
   };
 
   const logout = async () => {
@@ -82,7 +91,8 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       // ignore
     }
     setUser(null);
-    setIsAdmin(true); // Keep accessible
+    setIsAdmin(false);
+    localStorage.removeItem('autosquad_dealer_auth');
   };
 
   return (

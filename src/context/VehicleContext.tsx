@@ -130,6 +130,8 @@ export function ensureUUID(id: string): string {
 // Convert a vehicle object into a database payload matching schema.sql's columns exactly
 export function toDbPayload(v: any) {
   const reelVal = v.instagramReel || v.instagram_reel || null;
+  const imagesList = Array.isArray(v.images) ? v.images.filter(Boolean) : [];
+
   return {
     id: ensureUUID(v.id),
     make: v.make || '',
@@ -137,22 +139,29 @@ export function toDbPayload(v: any) {
     variant: v.variant || null,
     year: typeof v.year === 'number' ? v.year : Number(v.year || new Date().getFullYear()),
     price: typeof v.price === 'number' ? v.price : Number(v.price || 0),
+    original_price: v.originalPrice || v.original_price || null,
     mileage: typeof v.mileage === 'number' ? v.mileage : Number(v.mileage || 0),
+    km_driven: typeof v.mileage === 'number' ? v.mileage : Number(v.mileage || 0),
     fuel_type: v.fuelType || v.fuel_type || 'Petrol',
     transmission: v.transmission || 'Automatic',
     engine: v.engine || null,
     color: v.color || null,
     ownership: v.ownership || null,
+    owner_number: v.ownership || v.owner_number || null,
     registration: v.registration || null,
+    registration_state: v.registration || v.registration_state || null,
     status: v.status || 'Available',
     featured: v.featured !== undefined ? v.featured : false,
+    sold: v.status === 'Sold' || v.sold === true,
     description: v.description || null,
     instagram_reel: reelVal,
     inspection_notes: v.inspection_notes || v.inspectionNotes || null,
     features: Array.isArray(v.features) ? (
       reelVal ? [...v.features.filter((f: string) => !f.startsWith('instagram_reel:')), `instagram_reel:${reelVal}`] : v.features.filter((f: string) => !f.startsWith('instagram_reel:'))
     ) : (reelVal ? [`instagram_reel:${reelVal}`] : []),
-    is_deleted: v.deleted !== undefined ? v.deleted : (v.is_deleted !== undefined ? v.is_deleted : false)
+    images: imagesList,
+    is_deleted: v.deleted !== undefined ? v.deleted : (v.is_deleted !== undefined ? v.is_deleted : false),
+    updated_at: new Date().toISOString()
   };
 }
 
@@ -160,6 +169,7 @@ export function toDbPayload(v: any) {
 export async function syncVehicleImages(vehicleId: string, imageUrls: string[]) {
   if (!imageUrls || !Array.isArray(imageUrls)) return;
   const targetVehicleId = ensureUUID(vehicleId);
+  const cleanUrls = imageUrls.filter(u => Boolean(u) && typeof u === 'string');
   
   console.log(`[SYNC IMAGES] Clearing old records for vehicle: ${targetVehicleId}`);
   const { error: deleteError } = await supabase
@@ -168,25 +178,37 @@ export async function syncVehicleImages(vehicleId: string, imageUrls: string[]) 
     .eq('vehicle_id', targetVehicleId);
     
   if (deleteError) {
-    console.error(`[SYNC IMAGES ERROR] Failed to delete existing images for: ${targetVehicleId}`, deleteError);
+    console.warn(`[SYNC IMAGES WARN] Failed to delete existing images for: ${targetVehicleId}`, deleteError);
   }
 
-  if (imageUrls.length > 0) {
-    const rows = imageUrls.map((url, index) => ({
+  if (cleanUrls.length > 0) {
+    const rows = cleanUrls.map((url, index) => ({
       vehicle_id: targetVehicleId,
       image_url: url,
       display_order: index
     }));
     
-    console.log(`[SYNC IMAGES] Inserting ${rows.length} records for vehicle: ${targetVehicleId}`);
-    const { error: insertError } = await supabase
+    console.log(`[SYNC IMAGES] Inserting ${rows.length} records into vehicle_images for: ${targetVehicleId}`);
+    let { error: insertError } = await supabase
       .from('vehicle_images')
       .insert(rows);
       
+    if (insertError && (insertError.message?.includes('column') || insertError.code === '42703')) {
+      const altRows = cleanUrls.map((url, index) => ({
+        vehicle_id: targetVehicleId,
+        url: url,
+        display_order: index
+      }));
+      const { error: altError } = await supabase
+        .from('vehicle_images')
+        .insert(altRows);
+      insertError = altError;
+    }
+
     if (insertError) {
-      console.error(`[SYNC IMAGES ERROR] Failed to insert images for: ${targetVehicleId}`, insertError);
+      console.warn(`[SYNC IMAGES WARN] Failed to insert images into vehicle_images table for: ${targetVehicleId}`, insertError);
     } else {
-      console.log(`[SYNC IMAGES SUCCESS] Synced images for: ${targetVehicleId}`);
+      console.log(`[SYNC IMAGES SUCCESS] Synced ${cleanUrls.length} images for: ${targetVehicleId}`);
     }
   }
 }
@@ -537,22 +559,47 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
       incrementMetric('supabaseWrites');
       const dbPayload = toDbPayload(cleaned);
       console.log('[SUPABASE INSERT] Inserting vehicle:', targetId, dbPayload);
-      let { data, error } = await supabase.from('vehicles').insert([dbPayload]).select();
-      if (error && (error.message?.includes('instagram_reel') || error.code === '42703')) {
-        console.warn('[SUPABASE INSERT RETRY] Column "instagram_reel" not supported on vehicles table. Retrying with features-fallback list...', error);
-        const retryPayload = { ...dbPayload };
-        delete retryPayload.instagram_reel;
-        const retryQuery = await supabase.from('vehicles').insert([retryPayload]).select();
-        data = retryQuery.data;
-        error = retryQuery.error;
+      
+      let attemptPayload: any = { ...dbPayload };
+      let error: any = null;
+
+      for (let attempt = 0; attempt < 10; attempt++) {
+        const { data, error: insertError } = await supabase
+          .from('vehicles')
+          .insert([attemptPayload])
+          .select();
+
+        error = insertError;
+
+        if (error) {
+          console.warn(`[SUPABASE INSERT ATTEMPT ${attempt + 1} FAILED]`, error.message);
+          
+          const matchDouble = error.message?.match(/column "([^"]+)"/);
+          const matchSingleSuffix = error.message?.match(/'([^']+)' column/);
+          const matchSinglePrefix = error.message?.match(/column '([^']+)'/);
+          
+          let badCol = null;
+          if (matchDouble && matchDouble[1]) badCol = matchDouble[1];
+          else if (matchSingleSuffix && matchSingleSuffix[1]) badCol = matchSingleSuffix[1];
+          else if (matchSinglePrefix && matchSinglePrefix[1]) badCol = matchSinglePrefix[1];
+
+          if (badCol && badCol in attemptPayload) {
+            console.warn(`[SUPABASE INSERT RETRY] Column "${badCol}" not supported on vehicles table. Dropping from payload and retrying...`);
+            delete attemptPayload[badCol];
+            continue;
+          }
+        }
+        break;
       }
+
       if (error) {
         console.error('[SUPABASE INSERT ERROR]', error);
         throw new Error(`Database Insert Failed: ${error.message}`);
       } else {
-        console.log('[SUPABASE INSERT SUCCESS]', data);
-        await syncVehicleImages(targetId, cleaned.images);
+        console.log('[SUPABASE INSERT SUCCESS] Vehicle row inserted into Supabase table.');
       }
+
+      await syncVehicleImages(targetId, cleaned.images);
     }
 
     const nextList = [cleaned, ...vehicles.filter(v => ensureUUID(v.id) !== targetId)];
@@ -582,23 +629,48 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
 
       const dbPayload = toDbPayload(cleaned);
       console.log('[SUPABASE UPDATE] Updating vehicle:', targetId, dbPayload);
-      let { data, error } = await supabase.from('vehicles').update(dbPayload).eq('id', targetId).select();
-      if (error && (error.message?.includes('instagram_reel') || error.code === '42703')) {
-        console.warn('[SUPABASE UPDATE RETRY] Column "instagram_reel" not supported on vehicles table. Retrying with features-fallback list...', error);
-        const retryPayload = { ...dbPayload };
-        delete retryPayload.instagram_reel;
-        const retryQuery = await supabase.from('vehicles').update(retryPayload).eq('id', targetId).select();
-        data = retryQuery.data;
-        error = retryQuery.error;
+      
+      let attemptPayload: any = { ...dbPayload };
+      let error: any = null;
+
+      for (let attempt = 0; attempt < 10; attempt++) {
+        const { data, error: updateError } = await supabase
+          .from('vehicles')
+          .update(attemptPayload)
+          .eq('id', targetId)
+          .select();
+
+        error = updateError;
+
+        if (error) {
+          console.warn(`[SUPABASE UPDATE ATTEMPT ${attempt + 1} FAILED]`, error.message);
+          
+          const matchDouble = error.message?.match(/column "([^"]+)"/);
+          const matchSingleSuffix = error.message?.match(/'([^']+)' column/);
+          const matchSinglePrefix = error.message?.match(/column '([^']+)'/);
+          
+          let badCol = null;
+          if (matchDouble && matchDouble[1]) badCol = matchDouble[1];
+          else if (matchSingleSuffix && matchSingleSuffix[1]) badCol = matchSingleSuffix[1];
+          else if (matchSinglePrefix && matchSinglePrefix[1]) badCol = matchSinglePrefix[1];
+
+          if (badCol && badCol in attemptPayload) {
+            console.warn(`[SUPABASE UPDATE RETRY] Column "${badCol}" not supported on vehicles table. Dropping from payload and retrying...`);
+            delete attemptPayload[badCol];
+            continue;
+          }
+        }
+        break;
       }
       
       if (error) {
         console.error('[SUPABASE UPDATE ERROR]', error);
         throw new Error(`Database Update Failed: ${error.message}`);
       } else {
-        console.log('[SUPABASE UPDATE SUCCESS]', data);
-        await syncVehicleImages(targetId, cleaned.images);
+        console.log('[SUPABASE UPDATE SUCCESS] Vehicle row updated in Supabase table.');
       }
+
+      await syncVehicleImages(targetId, cleaned.images);
     }
 
     const nextList = vehicles.map(v => ensureUUID(v.id) === targetId ? cleaned : v);
@@ -671,8 +743,10 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
       const dbLead: any = {
         id: ensureUUID(newLead.id),
         customer_name: newLead.name,
+        name: newLead.name,
         phone: newLead.phone,
         email: newLead.email || null,
+        car_title: newLead.car ? newLead.car.split('\n')[0] : 'Inquiry',
         message: `${newLead.car}${serializedImagesStr}`,
         status: newLead.status,
         created_at: new Date().toISOString(),
@@ -680,14 +754,33 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
       };
       
       console.log('[SUPABASE LEAD INSERT] Attempting Lead Insert:', dbLead);
-      let { error } = await supabase.from('leads').insert([dbLead]);
-      
-      if (error && (error.message?.includes('column') || error.code === '42703')) {
-        console.warn('[SUPABASE LEAD INSERT RETRY] Column "images" not supported on leads table. Retrying with serialised message column fallback...');
-        const retryLead = { ...dbLead };
-        delete retryLead.images;
-        const retryQuery = await supabase.from('leads').insert([retryLead]);
-        error = retryQuery.error;
+
+      let attemptLead: any = { ...dbLead };
+      let error: any = null;
+
+      for (let attempt = 0; attempt < 8; attempt++) {
+        const { error: insertError } = await supabase.from('leads').insert([attemptLead]);
+        error = insertError;
+
+        if (error) {
+          console.warn(`[SUPABASE LEAD INSERT ATTEMPT ${attempt + 1} FAILED]`, error.message);
+          
+          const matchDouble = error.message?.match(/column "([^"]+)"/);
+          const matchSingleSuffix = error.message?.match(/'([^']+)' column/);
+          const matchSinglePrefix = error.message?.match(/column '([^']+)'/);
+          
+          let badCol = null;
+          if (matchDouble && matchDouble[1]) badCol = matchDouble[1];
+          else if (matchSingleSuffix && matchSingleSuffix[1]) badCol = matchSingleSuffix[1];
+          else if (matchSinglePrefix && matchSinglePrefix[1]) badCol = matchSinglePrefix[1];
+
+          if (badCol && badCol in attemptLead) {
+            console.warn(`[SUPABASE LEAD INSERT RETRY] Column "${badCol}" not supported on leads table. Dropping from payload and retrying...`);
+            delete attemptLead[badCol];
+            continue;
+          }
+        }
+        break;
       }
 
       if (error) {
@@ -713,6 +806,7 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
 
       const dbLead: any = {
         customer_name: updated.name,
+        name: updated.name,
         phone: updated.phone,
         email: updated.email || null,
         message: `${updated.car}${serializedImagesStr}`,
@@ -720,14 +814,33 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
         images: imagesArray
       };
       console.log('[SUPABASE LEAD UPDATE] Updating Lead:', id, dbLead);
-      let { error } = await supabase.from('leads').update(dbLead).eq('id', ensureUUID(id));
 
-      if (error && (error.message?.includes('column') || error.code === '42703')) {
-        console.warn('[SUPABASE LEAD UPDATE RETRY] Column "images" not supported on leads table. Retrying with serialised message fallback...');
-        const retryLead = { ...dbLead };
-        delete retryLead.images;
-        const retryQuery = await supabase.from('leads').update(retryLead).eq('id', ensureUUID(id));
-        error = retryQuery.error;
+      let attemptLead: any = { ...dbLead };
+      let error: any = null;
+
+      for (let attempt = 0; attempt < 8; attempt++) {
+        const { error: updateError } = await supabase.from('leads').update(attemptLead).eq('id', ensureUUID(id));
+        error = updateError;
+
+        if (error) {
+          console.warn(`[SUPABASE LEAD UPDATE ATTEMPT ${attempt + 1} FAILED]`, error.message);
+          
+          const matchDouble = error.message?.match(/column "([^"]+)"/);
+          const matchSingleSuffix = error.message?.match(/'([^']+)' column/);
+          const matchSinglePrefix = error.message?.match(/column '([^']+)'/);
+          
+          let badCol = null;
+          if (matchDouble && matchDouble[1]) badCol = matchDouble[1];
+          else if (matchSingleSuffix && matchSingleSuffix[1]) badCol = matchSingleSuffix[1];
+          else if (matchSinglePrefix && matchSinglePrefix[1]) badCol = matchSinglePrefix[1];
+
+          if (badCol && badCol in attemptLead) {
+            console.warn(`[SUPABASE LEAD UPDATE RETRY] Column "${badCol}" not supported on leads table. Dropping from payload and retrying...`);
+            delete attemptLead[badCol];
+            continue;
+          }
+        }
+        break;
       }
 
       if (error) {
@@ -808,12 +921,18 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
         id: nextConfig.id || '00000000-0000-0000-0000-000000000000',
         company_name: 'AutoSquad',
         about_image_url: encodedAboutImageWithDeliveries || null,
+        about_image: baseAboutImage || null,
         home_hero_image_url: nextConfig.homeHeroImage || null,
+        home_hero_image: nextConfig.homeHeroImage || null,
         home_hero_mobile_image_url: nextConfig.homeHeroMobileImage || null,
+        home_hero_mobile_image: nextConfig.homeHeroMobileImage || null,
         home_hero_video_url: nextConfig.homeHeroVideo || null,
+        home_hero_video: nextConfig.homeHeroVideo || null,
         home_hero_mobile_video_url: nextConfig.homeHeroMobileVideo || null,
+        home_hero_mobile_video: nextConfig.homeHeroMobileVideo || null,
         home_hero_type: nextConfig.homeHeroType || 'video',
         logo_url: nextConfig.logo || null,
+        logo: nextConfig.logo || null,
         client_deliveries: nextConfig.clientDeliveries || [],
         instagram_reels: nextConfig.instagramReels || [],
         updated_at: new Date().toISOString()

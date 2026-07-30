@@ -79,12 +79,11 @@ export default function CustomerLayout() {
   const closeMenu = () => setIsMenuOpen(false);
 
   const handleSecretLogin = () => {
-    loginAsDealer();
-    setNotification('Dealer session unlocked. Redirecting to showroom console...');
+    setNotification('Redirecting to Dealer Portal login...');
     setTimeout(() => {
       navigate('/dealer-management');
       setNotification('');
-    }, 1500);
+    }, 1000);
   };
 
   const registerTap = () => {
