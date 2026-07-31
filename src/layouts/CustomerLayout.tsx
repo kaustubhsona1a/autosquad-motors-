@@ -409,7 +409,7 @@ export default function CustomerLayout() {
             tabIndex={0}
             className="select-none text-zinc-500 cursor-pointer touch-manipulation hover:text-[#C8A64A] outline-none active:text-[#C8A64A] transition-colors"
           >
-            &copy; 2026 AutoSquad. All rights reserved.
+            &copy; 2005 AutoSquad. All rights reserved.
           </p>
           <div className="flex space-x-6 mt-4 md:mt-0 text-zinc-500">
             <a href="#" className="hover:text-white">Privacy</a>
