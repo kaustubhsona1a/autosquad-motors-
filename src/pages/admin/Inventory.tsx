@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { formatPrice, Vehicle } from '../../data/mockData';
 import { Search, Plus, Edit, Trash2, AlertTriangle, Loader2 } from 'lucide-react';
@@ -113,7 +114,12 @@ export default function AdminInventory() {
                         <Edit className="w-4 h-4" />
                       </Link>
                       <button 
-                        onClick={() => setVehicleToDelete(car)} 
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setVehicleToDelete(car);
+                        }} 
                         className="p-2 text-zinc-400 hover:text-red-400 bg-zinc-900/30 hover:bg-red-500/10 border border-white/5 hover:border-red-500/20 rounded-xl transition-all"
                         title="Delete Car"
                       >
@@ -169,7 +175,12 @@ export default function AdminInventory() {
                     <Edit className="w-4.5 h-4.5" />
                   </Link>
                   <button 
-                    onClick={() => setVehicleToDelete(car)} 
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setVehicleToDelete(car);
+                    }} 
                     className="p-2 text-zinc-300 hover:text-red-400 bg-zinc-900/40 hover:bg-red-500/10 border border-white/5 hover:border-red-500/30 rounded-xl transition-all" 
                     title="Delete Car"
                   >
@@ -187,9 +198,9 @@ export default function AdminInventory() {
       </div>
 
       {/* Confirmation Modal */}
-      {vehicleToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-zinc-950 border border-red-500/30 rounded-2xl p-6 max-w-md w-full space-y-5 shadow-2xl relative overflow-hidden">
+      {vehicleToDelete && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-zinc-950 border border-red-500/30 rounded-2xl p-6 max-w-md w-full space-y-5 shadow-2xl relative overflow-hidden my-auto">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 flex items-center justify-center shrink-0">
                 <AlertTriangle className="w-6 h-6" />
@@ -207,6 +218,7 @@ export default function AdminInventory() {
 
             <div className="flex items-center justify-end gap-3 pt-2 border-t border-white/10 font-mono text-xs font-bold uppercase tracking-wider">
               <button
+                type="button"
                 disabled={isDeleting}
                 onClick={() => setVehicleToDelete(null)}
                 className="px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-white/10 transition-all disabled:opacity-50"
@@ -214,6 +226,7 @@ export default function AdminInventory() {
                 Cancel
               </button>
               <button
+                type="button"
                 disabled={isDeleting}
                 onClick={confirmDelete}
                 className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white flex items-center gap-2 transition-all shadow-lg hover:shadow-red-600/30 disabled:opacity-50"
@@ -232,7 +245,8 @@ export default function AdminInventory() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
