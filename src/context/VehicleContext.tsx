@@ -312,8 +312,10 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
 
     try {
       // Read from IndexedDB cache first for speed
-      const cachedVehicles = await getFromCache<Vehicle[]>('vehicles');
-      const cachedConfig = await getFromCache<SiteConfig>('site_config');
+      const [cachedVehicles, cachedConfig] = await Promise.all([
+        getFromCache<Vehicle[]>('vehicles'),
+        getFromCache<SiteConfig>('site_config')
+      ]);
 
       if (cachedVehicles && cachedVehicles.length > 0) {
         const normalized = normalizeVehicles(cachedVehicles);
@@ -326,38 +328,32 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
         setSiteConfig(DEFAULT_CONFIG);
       }
 
-      // Fetch real data from Supabase DB
+      // Fetch real data from Supabase DB in parallel
       if (isSupabaseConfigured()) {
         try {
           incrementMetric('supabaseReads');
-          const { data: metaData } = await supabase
-            .from('metadata_versions')
-            .select('version')
-            .eq('key', 'vehicles')
-            .single();
 
-          const remoteVersion = metaData?.version || 1;
+          // Fire vehicles and site_settings queries concurrently
+          const [vehiclesRes, siteRes] = await Promise.all([
+            supabase.from('vehicles').select('*'),
+            supabase.from('site_settings').select('*')
+          ]);
 
-          // Fetch Site Settings from Supabase
-          let siteQuery = await supabase
-            .from('site_settings')
-            .select('*')
-            .eq('id', '00000000-0000-0000-0000-000000000000')
-            .maybeSingle();
-
-          let siteData = siteQuery.data;
-          let siteError = siteQuery.error;
-
-          if (!siteData && !siteError) {
-            const anyRowQuery = await supabase
-              .from('site_settings')
-              .select('*')
-              .maybeSingle();
-            siteData = anyRowQuery.data;
-            siteError = anyRowQuery.error;
+          // Process Vehicles immediately
+          if (!vehiclesRes.error && vehiclesRes.data) {
+            const normalized = normalizeVehicles(vehiclesRes.data);
+            const filtered = normalized.filter(v => !v.deleted && v.status !== 'Deleted');
+            setVehicles(filtered);
+            await saveToCache('vehicles', normalized);
+            await saveToCache('vehicles_version', Date.now());
+          } else if (vehiclesRes.error) {
+            console.warn('[SUPABASE VEHICLES FETCH NOTICE]', vehiclesRes.error.message || vehiclesRes.error);
           }
 
-          if (!siteError && siteData) {
+          // Process Site Settings
+          if (!siteRes.error && siteRes.data && siteRes.data.length > 0) {
+            const siteData = siteRes.data.find(r => r.id === '00000000-0000-0000-0000-000000000000') || siteRes.data[0];
+
             let fetchedAboutImage = siteData.aboutImage || siteData.about_image_url || siteData.about_image || DEFAULT_CONFIG.aboutImage;
             let fetchedClientDeliveries = siteData.clientDeliveries || siteData.client_deliveries || null;
             let fetchedHomeHeroMobileImage = siteData.homeHeroMobileImage || siteData.home_hero_mobile_image_url || undefined;
@@ -412,25 +408,6 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
             };
             setSiteConfig(parsedConfig);
             await saveToCache('site_config', parsedConfig);
-          }
-
-          // Fetch exact inventory directly from Supabase
-          incrementMetric('supabaseReads');
-          let queryResult = await supabase.from('vehicles').select('*, vehicle_images(*)');
-          
-          if (queryResult.error) {
-            console.warn('[SUPABASE VEHICLES FETCH WARN] Relational query failed, falling back to simple select:', queryResult.error.message || queryResult.error);
-            queryResult = await supabase.from('vehicles').select('*');
-          }
-
-          if (!queryResult.error && queryResult.data) {
-            const normalized = normalizeVehicles(queryResult.data);
-            const filtered = normalized.filter(v => !v.deleted && v.status !== 'Deleted');
-            setVehicles(filtered);
-            await saveToCache('vehicles', normalized);
-            await saveToCache('vehicles_version', remoteVersion || Date.now());
-          } else if (queryResult.error) {
-            console.warn('[SUPABASE VEHICLES FETCH NOTICE]', queryResult.error.message || queryResult.error);
           }
         } catch (err) {
           console.warn('[SUPABASE VEHICLES FETCH NOTICE]', err);
