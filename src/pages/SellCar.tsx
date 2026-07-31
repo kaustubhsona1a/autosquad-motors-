@@ -1,8 +1,7 @@
 import React, { useState, FormEvent, useRef, DragEvent, ChangeEvent } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useVehicles } from '../context/VehicleContext';
-import { uploadImageToStorage } from '../lib/supabase';
-import imageCompression from 'browser-image-compression';
+import { uploadImageToStorage, compressImageToWebP } from '../lib/supabase';
 import { Camera, Image as ImageIcon, Upload, X, Loader2 } from 'lucide-react';
 
 export default function SellCar() {
@@ -81,13 +80,7 @@ export default function SellCar() {
         console.warn('[LEAD STORAGE UPLOAD FAIL] Storage bucket upload rejected/policy restricted. Using high-efficiency local Base64 compression:', err);
         try {
           // Efficient compressed webp fallback
-          const options = {
-            maxSizeMB: 0.08, // Target ~80kb budget limit to conserve database text spaces safely
-            maxWidthOrHeight: 800,
-            useWebWorker: true,
-            fileType: 'image/webp'
-          };
-          const compressedBlob = await imageCompression(file, options);
+          const compressedBlob = await compressImageToWebP(file, 800, 0.75);
           const base64Url = await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
             reader.onloadend = () => resolve(reader.result as string);

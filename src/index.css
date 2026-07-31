@@ -22,6 +22,7 @@
 @layer base {
   body {
     @apply bg-[#050505] text-[#D1D5DB] font-sans antialiased selection:bg-[#D4AF37]/25 selection:text-[#FFFFFF];
+    touch-action: manipulation;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: "Cinzel", Georgia, serif;
@@ -30,6 +31,14 @@
   html {
     @apply font-sans bg-[#050505];
     scroll-behavior: smooth;
+    touch-action: manipulation;
+  }
+}
+
+/* Prevent iOS Safari automatic viewport auto-zoom when tapping on form fields */
+@media screen and (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
   }
 }
 
