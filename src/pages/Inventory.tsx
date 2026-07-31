@@ -27,6 +27,7 @@ export default function Inventory() {
   const [selectedTransmissions, setSelectedTransmissions] = useState<string[]>([]);
   const [maxMileage, setMaxMileage] = useState<number | null>(null);
   const [selectedFuelTypes, setSelectedFuelTypes] = useState<string[]>([]);
+  const [minYear, setMinYear] = useState<number | null>(null);
   
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
@@ -45,6 +46,11 @@ export default function Inventory() {
     if (budgetIndex < BUDGET_OPTIONS.length - 1) {
       const currentMaxBudget = BUDGET_OPTIONS[budgetIndex];
       result = result.filter(car => car.price <= currentMaxBudget);
+    }
+
+    // Model Year filter
+    if (minYear !== null) {
+      result = result.filter(car => Number(car.year) >= minYear);
     }
 
     // Owners filter
@@ -85,7 +91,7 @@ export default function Inventory() {
     }
     
     return result;
-  }, [vehicles, searchTerm, sortBy, budgetIndex, selectedOwners, selectedTransmissions, maxMileage, selectedFuelTypes]);
+  }, [vehicles, searchTerm, sortBy, budgetIndex, selectedOwners, selectedTransmissions, maxMileage, selectedFuelTypes, minYear]);
 
   const toggleOwner = (owner: string) => {
     setSelectedOwners(prev => prev.includes(owner) ? prev.filter(o => o !== owner) : [...prev, owner]);
@@ -105,6 +111,7 @@ export default function Inventory() {
     setSelectedTransmissions([]);
     setMaxMileage(null);
     setSelectedFuelTypes([]);
+    setMinYear(null);
     setSearchTerm('');
     setSortBy('newest');
   };
@@ -112,6 +119,7 @@ export default function Inventory() {
   const ALL_OWNERS = ['1st Owner', '2nd Owner', '3rd Owner', '4th+ Owner', '1st', '2nd', '3rd', '4th+']; // Match formats
   const ALL_TRANSMISSIONS = ['Automatic', 'Manual'];
   const ALL_FUELS = ['Petrol', 'Diesel', 'Hybrid', 'Electric', 'CNG'];
+  const ALL_YEAR_OPTIONS = [2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2012, 2010];
 
   return (
     <div className="min-h-screen bg-transparent text-zinc-300 pt-5 sm:pt-8 md:pt-10 pb-16 font-sans z-10 relative">
@@ -206,6 +214,54 @@ export default function Inventory() {
                       onChange={(e) => setBudgetIndex(parseInt(e.target.value))}
                       className="w-full accent-white h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
                     />
+                  </div>
+                </div>
+
+                {/* Model Year */}
+                <div>
+                  <h4 className="text-[10px] uppercase tracking-wider text-zinc-400 mb-3 font-bold font-mono border-b border-white/25 pb-1.5 flex items-center justify-between">
+                    <span>Model Year</span>
+                    <span className="text-[11px] text-white font-semibold font-mono normal-case">
+                      {minYear === null ? 'All Years' : `${minYear} & Newer`}
+                    </span>
+                  </h4>
+                  <div className="space-y-3">
+                    <div className="relative">
+                      <select 
+                        value={minYear === null ? 'all' : minYear.toString()}
+                        onChange={(e) => setMinYear(e.target.value === 'all' ? null : parseInt(e.target.value))}
+                        className="w-full bg-zinc-950/80 border border-zinc-800 text-xs tracking-wider text-zinc-300 uppercase px-3.5 py-2.5 rounded-xl outline-none focus:border-white transition-colors block shadow-sm font-mono cursor-pointer"
+                      >
+                        <option value="all" className="bg-zinc-950 text-white">All Model Years</option>
+                        {ALL_YEAR_OPTIONS.map(yr => (
+                          <option key={yr} value={yr} className="bg-zinc-950 text-white">
+                            {yr} & Newer
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {[
+                        { label: 'All', value: null },
+                        { label: '2023+', value: 2023 },
+                        { label: '2021+', value: 2021 },
+                        { label: '2019+', value: 2019 },
+                      ].map(chip => (
+                        <button
+                          key={chip.label}
+                          type="button"
+                          onClick={() => setMinYear(chip.value)}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold transition-all ${
+                            minYear === chip.value 
+                              ? 'bg-white text-zinc-950 border border-white' 
+                              : 'bg-zinc-900/60 text-zinc-400 border border-white/10 hover:border-white/30 hover:text-white'
+                          }`}
+                        >
+                          {chip.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
 

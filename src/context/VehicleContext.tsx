@@ -311,19 +311,13 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
     };
 
     try {
-      // 1. Immediately read from cache for instataneous first paint
+      // Read from IndexedDB cache first for speed
       const cachedVehicles = await getFromCache<Vehicle[]>('vehicles');
       const cachedConfig = await getFromCache<SiteConfig>('site_config');
-      const localVersion = await getFromCache<number>('vehicles_version') || 0;
-
-      let hasMountedCache = false;
 
       if (cachedVehicles && cachedVehicles.length > 0) {
         const normalized = normalizeVehicles(cachedVehicles);
         setVehicles(normalized.filter(v => !v.deleted && v.status !== 'Deleted'));
-        hasMountedCache = true;
-      } else {
-        setVehicles([]);
       }
       
       if (cachedConfig) {
@@ -332,19 +326,11 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
         setSiteConfig(DEFAULT_CONFIG);
       }
 
-      // If we got cached data, we can disable the primary full-page loading spinner instantly!
-      if (hasMountedCache) {
-        setLoading(false);
-      } else {
-        setLoading(true);
-      }
-
-      // 2. Perform background revalidation and DB fetch with Supabase
+      // Fetch real data from Supabase DB
       if (isSupabaseConfigured()) {
         try {
-          // Check metadata version first (non-blocking if we have cache, blocking if we don't)
           incrementMetric('supabaseReads');
-          const { data: metaData, error: metaError } = await supabase
+          const { data: metaData } = await supabase
             .from('metadata_versions')
             .select('version')
             .eq('key', 'vehicles')
@@ -352,7 +338,7 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
 
           const remoteVersion = metaData?.version || 1;
 
-          // Fetch Site Settings from Supabase by default ID, with any-row fallback
+          // Fetch Site Settings from Supabase
           let siteQuery = await supabase
             .from('site_settings')
             .select('*')
@@ -371,7 +357,7 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
             siteError = anyRowQuery.error;
           }
 
-           if (!siteError && siteData) {
+          if (!siteError && siteData) {
             let fetchedAboutImage = siteData.aboutImage || siteData.about_image_url || siteData.about_image || DEFAULT_CONFIG.aboutImage;
             let fetchedClientDeliveries = siteData.clientDeliveries || siteData.client_deliveries || null;
             let fetchedHomeHeroMobileImage = siteData.homeHeroMobileImage || siteData.home_hero_mobile_image_url || undefined;
@@ -381,42 +367,29 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
 
             let fetchedHomeHeroType: 'video' | 'image' = 'video';
 
-            // Self-healing fallback parsing from dual-persisted encoded fields if present
             if (fetchedAboutImage && fetchedAboutImage.includes('|||')) {
               const parts = fetchedAboutImage.split('|||');
               fetchedAboutImage = parts[0];
               if (parts[1]) {
                 try {
                   const decoded = JSON.parse(parts[1]);
-                  if (Array.isArray(decoded)) {
-                    fetchedClientDeliveries = decoded;
-                  }
+                  if (Array.isArray(decoded)) fetchedClientDeliveries = decoded;
                 } catch (e) {
-                  console.warn('[SUPABASE FETCH FALLBACK WARNING] Parsing serialized client deliveries failed:', e);
+                  console.warn('[SUPABASE FETCH FALLBACK WARNING]', e);
                 }
               }
-              if (parts[2]) {
-                fetchedHomeHeroMobileImage = parts[2];
-              }
+              if (parts[2]) fetchedHomeHeroMobileImage = parts[2];
               if (parts[3]) {
                 try {
                   const decoded = JSON.parse(parts[3]);
-                  if (Array.isArray(decoded)) {
-                    fetchedInstagramReels = decoded;
-                  }
+                  if (Array.isArray(decoded)) fetchedInstagramReels = decoded;
                 } catch (e) {
-                  console.warn('[SUPABASE FETCH FALLBACK WARNING] Parsing serialized instagram reels failed:', e);
+                  console.warn('[SUPABASE FETCH FALLBACK WARNING]', e);
                 }
               }
-              if (parts[4]) {
-                fetchedHomeHeroVideo = fetchedHomeHeroVideo || parts[4];
-              }
-              if (parts[5]) {
-                fetchedHomeHeroMobileVideo = fetchedHomeHeroMobileVideo || parts[5];
-              }
-              if (parts[6]) {
-                fetchedHomeHeroType = (parts[6] === 'image' || parts[6] === 'video') ? parts[6] as 'video' | 'image' : 'video';
-              }
+              if (parts[4]) fetchedHomeHeroVideo = fetchedHomeHeroVideo || parts[4];
+              if (parts[5]) fetchedHomeHeroMobileVideo = fetchedHomeHeroMobileVideo || parts[5];
+              if (parts[6]) fetchedHomeHeroType = (parts[6] === 'image' || parts[6] === 'video') ? parts[6] as 'video' | 'image' : 'video';
             }
 
             if (siteData.home_hero_type) {
@@ -441,40 +414,30 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
             await saveToCache('site_config', parsedConfig);
           }
 
-          // Always fetch fresh vehicles from Supabase in background to guarantee both mobile and desktop stay in sync
+          // Fetch exact inventory directly from Supabase
           incrementMetric('supabaseReads');
-          const { data, error } = await supabase.from('vehicles').select('*, vehicle_images(*)');
-          if (!error && data) {
-            if (data.length > 0) {
-              const normalized = normalizeVehicles(data);
-              const filtered = normalized.filter(v => !v.deleted && v.status !== 'Deleted');
-              setVehicles(filtered);
-              await saveToCache('vehicles', normalized);
-              await saveToCache('vehicles_version', remoteVersion || Date.now());
-            } else {
-              setVehicles([]);
-              await saveToCache('vehicles', []);
-            }
-          } else if (error) {
-            console.warn('Supabase query failed, keeping cache fallback', error);
-            if (!hasMountedCache) {
-              setVehicles([]);
-            }
+          let queryResult = await supabase.from('vehicles').select('*, vehicle_images(*)');
+          
+          if (queryResult.error) {
+            console.warn('[SUPABASE VEHICLES FETCH WARN] Relational query failed, falling back to simple select:', queryResult.error.message || queryResult.error);
+            queryResult = await supabase.from('vehicles').select('*');
+          }
+
+          if (!queryResult.error && queryResult.data) {
+            const normalized = normalizeVehicles(queryResult.data);
+            const filtered = normalized.filter(v => !v.deleted && v.status !== 'Deleted');
+            setVehicles(filtered);
+            await saveToCache('vehicles', normalized);
+            await saveToCache('vehicles_version', remoteVersion || Date.now());
+          } else if (queryResult.error) {
+            console.warn('[SUPABASE VEHICLES FETCH NOTICE]', queryResult.error.message || queryResult.error);
           }
         } catch (err) {
-          console.warn('Background Supabase revalidation failed, keeping cache/empty', err);
-          if (!hasMountedCache) {
-            setVehicles([]);
-          }
-        }
-      } else {
-        // Local mode fallback if no cached vehicles are found
-        if (!hasMountedCache) {
-          setVehicles([]);
+          console.warn('[SUPABASE VEHICLES FETCH NOTICE]', err);
         }
       }
     } catch (error) {
-      console.error('[CACHE LOAD FAILED]', error);
+      console.warn('[INVENTORY LOAD NOTICE]', error);
     } finally {
       setLoading(false);
     }
