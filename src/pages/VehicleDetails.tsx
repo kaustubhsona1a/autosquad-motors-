@@ -4,6 +4,7 @@ import { CheckCircle2, ChevronLeft, ChevronRight, MapPin, Search, Share2, Copy, 
 import React, { useState, useEffect } from 'react';
 import { useVehicles } from '../context/VehicleContext';
 import { Helmet } from 'react-helmet-async';
+import { openPhoneModal } from '../components/PhoneModal';
 
 export default function VehicleDetails() {
   const { vehicles, loading } = useVehicles();
@@ -165,7 +166,7 @@ export default function VehicleDetails() {
   };
 
   const handleCall = () => {
-    window.open(`tel:+919769699655`);
+    openPhoneModal();
   };
 
   const [showShareModal, setShowShareModal] = useState(false);

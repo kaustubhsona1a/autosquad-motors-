@@ -3,6 +3,7 @@ import { ArrowRight, ShieldCheck, Banknote, FileText, Star, MapPin, Phone, Car, 
 import { formatPrice, MOCK_REVIEWS } from '../data/mockData';
 import { useVehicles } from '../context/VehicleContext';
 import { Helmet } from 'react-helmet-async';
+import { openPhoneModal } from '../components/PhoneModal';
 
 const CARD_THEMES = [
   {
@@ -279,8 +280,8 @@ export default function Home() {
               </div>
               <h3 className="tracking-widest text-xs uppercase text-[#D4AF37] mb-4 font-serif font-bold">Showroom Address</h3>
               <p className="text-zinc-300 text-base leading-relaxed tracking-wide font-light">
-                2nd Floor Raheja BMC Parking,<br/>
-                Agripada, Near Kalapani Police Choke,<br/>
+                3rd Floor Raheja BMC Parking,<br/>
+                Agripada, Near Kalapani Police Chokwi,<br/>
                 Mumbai, Maharashtra 400011
               </p>
               <a 
@@ -295,17 +296,20 @@ export default function Home() {
             </div>
             
             <div className="group rounded-2xl border border-[#D4AF37]/45 hover:border-[#D4AF37] bg-[#0a0a0d]/95 p-8 sm:p-10 flex flex-col items-center h-full text-zinc-300 backdrop-blur-md transition-all duration-300 shadow-xl shadow-black/80 hover:-translate-y-1">
-              <div className="bg-[#D4AF37]/10 p-4 rounded-xl border border-[#D4AF37]/40 mb-6">
+              <div onClick={openPhoneModal} className="bg-[#D4AF37]/10 p-4 rounded-xl border border-[#D4AF37]/40 mb-6 cursor-pointer hover:scale-105 transition-transform" title="Select Contact Number">
                 <Phone className="w-8 h-8 text-[#D4AF37]" />
               </div>
               <h3 className="tracking-widest text-xs uppercase text-[#D4AF37] mb-4 font-serif font-bold">Contact Us</h3>
-              <a href="tel:+919769699655" className="text-zinc-200 text-2xl tracking-wide hover:text-[#FCF6BA] transition-all font-mono font-bold my-auto">+91 97696 99655</a>
-              <a 
-                href="tel:+919769699655" 
+              <div className="flex flex-col items-center gap-2 my-auto">
+                <a href="tel:+919769699655" className="text-zinc-200 text-xl sm:text-2xl tracking-wide hover:text-[#FCF6BA] transition-all font-mono font-bold">+91 97696 99655</a>
+                <a href="tel:+919821674631" className="text-zinc-200 text-xl sm:text-2xl tracking-wide hover:text-[#FCF6BA] transition-all font-mono font-bold">+91 98216 74631</a>
+              </div>
+              <button 
+                onClick={openPhoneModal} 
                 className="mt-8 text-[#D4AF37] hover:text-[#FCF6BA] text-xs tracking-widest uppercase font-serif font-bold border-b border-[#D4AF37]/40 hover:border-[#D4AF37] pb-1 transition-all"
               >
                 Call Now
-              </a>
+              </button>
             </div>
           </div>
         </div>

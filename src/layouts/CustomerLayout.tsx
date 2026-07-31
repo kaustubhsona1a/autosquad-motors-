@@ -3,6 +3,7 @@ import { MapPin, Phone, Mail, Clock, MessageCircle, Instagram, Twitter, Menu, X,
 import React, { useState } from 'react';
 import { useVehicles, sanitizeHeroImage } from '../context/VehicleContext';
 import { useAuth } from '../context/AuthContext';
+import PhoneModal, { openPhoneModal } from '../components/PhoneModal';
 
 let globalVideoFinished = false;
 
@@ -185,16 +186,19 @@ export default function CustomerLayout() {
               
               {/* Contact & Location Badges */}
               <div className="flex items-center">
-                {/* Phone + Number */}
-                <a 
-                  href="tel:+919769699655" 
-                  className="flex items-center space-x-1.5 text-white hover:text-[#d2a353] transition-colors duration-200"
-                >
-                  <Phone className="w-4 h-4 lg:w-4.5 lg:h-4.5 text-[#d2a353] stroke-[1.8] shrink-0" />
-                  <span className="font-medium tracking-[0.08em] text-white text-xs lg:text-sm whitespace-nowrap">
-                    +91 97696 99655
-                  </span>
-                </a>
+                {/* Phone + Numbers */}
+                <div className="flex items-center space-x-1.5 text-white">
+                  <Phone 
+                    onClick={openPhoneModal} 
+                    className="w-4 h-4 lg:w-4.5 lg:h-4.5 text-[#d2a353] stroke-[1.8] shrink-0 cursor-pointer hover:scale-110 transition-transform" 
+                    title="Select Contact Number"
+                  />
+                  <div className="flex items-center space-x-1.5 font-medium tracking-[0.08em] text-xs lg:text-sm whitespace-nowrap">
+                    <a href="tel:+919769699655" className="hover:text-[#d2a353] transition-colors duration-200">+91 97696 99655</a>
+                    <span className="text-zinc-500">/</span>
+                    <a href="tel:+919821674631" className="hover:text-[#d2a353] transition-colors duration-200">+91 98216 74631</a>
+                  </div>
+                </div>
 
                 {/* Vertical Line Separator with Balanced Margins */}
                 <div className="h-4 w-[1px] bg-zinc-600/70 shrink-0 mx-3.5 sm:mx-4 lg:mx-5" />
@@ -275,9 +279,9 @@ export default function CustomerLayout() {
             <div className="flex md:hidden items-center ml-auto">
               {/* Mobile Header Quick Icons */}
               <div className="flex items-center space-x-2.5 sm:space-x-3.5 mr-2 sm:mr-3">
-                <a href="tel:+919769699655" className="p-1 text-[#d2a353] hover:text-white transition-colors" title="Call Us">
+                <button onClick={openPhoneModal} className="p-1 text-[#d2a353] hover:text-white transition-colors" title="Call Us">
                   <Phone className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[1.8]" />
-                </a>
+                </button>
                 <a href="https://www.instagram.com/autosquad_cars/" target="_blank" rel="noreferrer" className="p-1 text-zinc-300 hover:text-white transition-colors" title="Instagram">
                   <Instagram className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[1.8]" />
                 </a>
@@ -307,10 +311,15 @@ export default function CustomerLayout() {
             <a href="#contact" onClick={closeMenu} className="text-white hover:text-[#d2a353]">Contact</a>
 
             <div className="pt-4 border-t border-zinc-700/60 flex flex-wrap items-center gap-4 text-xs font-sans">
-              <a href="tel:+919769699655" className="flex items-center space-x-2 text-white">
-                <Phone className="w-4 h-4 text-[#d2a353]" />
-                <span className="tracking-[0.08em]">+91 97696 99655</span>
-              </a>
+              <div className="flex flex-col space-y-1 text-white">
+                <a href="tel:+919769699655" className="flex items-center space-x-2">
+                  <Phone className="w-4 h-4 text-[#d2a353]" />
+                  <span className="tracking-[0.08em]">+91 97696 99655</span>
+                </a>
+                <a href="tel:+919821674631" className="flex items-center space-x-2 pl-6">
+                  <span className="tracking-[0.08em]">+91 98216 74631</span>
+                </a>
+              </div>
               <a href="https://www.instagram.com/autosquad_cars/" target="_blank" rel="noreferrer" className="flex items-center space-x-1.5 text-zinc-300 hover:text-white">
                 <Instagram className="w-4 h-4 text-zinc-300" />
                 <span>Instagram</span>
@@ -378,12 +387,15 @@ export default function CustomerLayout() {
               <li className="flex items-start">
                 <MapPin className="w-5 h-5 text-[#C8A64A] mr-3 shrink-0 mt-1" />
                 <a href="https://maps.app.goo.gl/D6y6jmfmthu22fyY9" target="_blank" rel="noreferrer" className="hover:text-[#D4AF37] transition-colors duration-300 leading-relaxed font-light text-zinc-400">
-                  2nd Floor Raheja BMC Parking, Agripada, Near Kalapani Police Choke
+                  3rd Floor Raheja BMC Parking, Agripada, Near Kalapani Police Chokwi
                 </a>
               </li>
-              <li className="flex items-center">
-                <Phone className="w-5 h-5 text-[#C8A64A] mr-3 shrink-0" />
-                <a href="tel:+919769699655" className="hover:text-[#C8A64A] transition-colors duration-300 font-mono">+91 97696 99655</a>
+              <li className="flex items-start">
+                <Phone className="w-5 h-5 text-[#C8A64A] mr-3 shrink-0 mt-0.5" />
+                <div className="flex flex-col space-y-1 font-mono">
+                  <a href="tel:+919769699655" className="hover:text-[#C8A64A] transition-colors duration-300">+91 97696 99655</a>
+                  <a href="tel:+919821674631" className="hover:text-[#C8A64A] transition-colors duration-300">+91 98216 74631</a>
+                </div>
               </li>
               <li className="flex items-center">
                 <Mail className="w-5 h-5 text-[#C8A64A] mr-3 shrink-0" />
@@ -409,6 +421,7 @@ export default function CustomerLayout() {
           </div>
         </div>
       </footer>
+      <PhoneModal />
       </div>
     </div>
   );

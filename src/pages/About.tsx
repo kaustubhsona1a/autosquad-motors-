@@ -176,7 +176,7 @@ export default function About() {
             <p className="text-[#D4AF37] font-serif text-[10px] tracking-[0.3em] uppercase font-bold">MUMBAI DELIVERIES</p>
             <h4 className="text-white font-serif text-xl font-bold mt-1">Acquisition Milestone Celebration</h4>
             <p className="text-zinc-400 text-xs mt-2 font-light leading-relaxed">
-              Every photograph is a direct capture of an esteemed patron receiving delivery of their handpicked, verified performance car from our secure gallery at 2nd Floor Raheja BMC Parking, Agripada, near Kalapani Police Choke.
+              Every photograph is a direct capture of an esteemed patron receiving delivery of their handpicked, verified performance car from our secure gallery at 3rd Floor Raheja BMC Parking, Agripada, near Kalapani Police Chokwi.
             </p>
           </div>
         </div>
