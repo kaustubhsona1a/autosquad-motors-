@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { MapPin, Phone, Mail, Clock, MessageCircle, Instagram, Twitter, Menu, X, Star, Upload, Image, Check, ChevronRight } from 'lucide-react';
+import { MapPin, Phone, Clock, MessageCircle, Instagram, Twitter, Menu, X, Star, Upload, Image, Check, ChevronRight } from 'lucide-react';
 import React, { useState } from 'react';
 import { useVehicles, sanitizeHeroImage } from '../context/VehicleContext';
 import { useAuth } from '../context/AuthContext';
@@ -396,10 +396,6 @@ export default function CustomerLayout() {
                   <a href="tel:+919769699655" className="hover:text-[#C8A64A] transition-colors duration-300">+91 97696 99655</a>
                   <a href="tel:+919821674631" className="hover:text-[#C8A64A] transition-colors duration-300">+91 98216 74631</a>
                 </div>
-              </li>
-              <li className="flex items-center">
-                <Mail className="w-5 h-5 text-[#C8A64A] mr-3 shrink-0" />
-                <a href="mailto:contact@autosquad.in" className="hover:text-[#C8A64A] transition-colors duration-300 font-mono font-bold">contact@autosquad.in</a>
               </li>
             </ul>
           </div>

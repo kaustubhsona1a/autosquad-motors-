@@ -1,19 +1,34 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { formatPrice } from '../../data/mockData';
-import { Search, Plus, Edit, Trash2 } from 'lucide-react';
+import { formatPrice, Vehicle } from '../../data/mockData';
+import { Search, Plus, Edit, Trash2, AlertTriangle, Loader2 } from 'lucide-react';
 import { useVehicles } from '../../context/VehicleContext';
 
 export default function AdminInventory() {
   const { vehicles, updateVehicle, removeVehicle } = useVehicles();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All Statuses');
+  const [vehicleToDelete, setVehicleToDelete] = useState<Vehicle | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   const filteredVehicles = vehicles.filter(v => {
     const matchesSearch = (v.make + ' ' + v.model + ' ' + (v.registration || '')).toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'All Statuses' || v.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const confirmDelete = async () => {
+    if (!vehicleToDelete) return;
+    setIsDeleting(true);
+    try {
+      await removeVehicle(vehicleToDelete.id);
+    } catch (err) {
+      console.error("Error deleting vehicle:", err);
+    } finally {
+      setIsDeleting(false);
+      setVehicleToDelete(null);
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -97,7 +112,11 @@ export default function AdminInventory() {
                       <Link to={`/dealer-management/inventory/edit/${car.id}`} className="p-2 text-zinc-400 hover:text-white bg-zinc-900/30 hover:bg-white/5 border border-white/5 hover:border-white/30 rounded-xl transition-all">
                         <Edit className="w-4 h-4" />
                       </Link>
-                      <button onClick={() => removeVehicle(car.id)} className="p-2 text-zinc-400 hover:text-red-400 bg-zinc-900/30 hover:bg-red-500/10 border border-white/5 hover:border-red-500/20 rounded-xl transition-all">
+                      <button 
+                        onClick={() => setVehicleToDelete(car)} 
+                        className="p-2 text-zinc-400 hover:text-red-400 bg-zinc-900/30 hover:bg-red-500/10 border border-white/5 hover:border-red-500/20 rounded-xl transition-all"
+                        title="Delete Car"
+                      >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -149,7 +168,11 @@ export default function AdminInventory() {
                   <Link to={`/dealer-management/inventory/edit/${car.id}`} className="p-2 text-zinc-300 hover:text-white bg-zinc-900/40 hover:bg-white/5 border border-white/5 hover:border-white/25 rounded-xl transition-all" title="Edit Car">
                     <Edit className="w-4.5 h-4.5" />
                   </Link>
-                  <button onClick={() => removeVehicle(car.id)} className="p-2 text-zinc-300 hover:text-red-400 bg-zinc-900/40 hover:bg-red-500/10 border border-white/5 hover:border-red-500/30 rounded-xl transition-all" title="Delete Car">
+                  <button 
+                    onClick={() => setVehicleToDelete(car)} 
+                    className="p-2 text-zinc-300 hover:text-red-400 bg-zinc-900/40 hover:bg-red-500/10 border border-white/5 hover:border-red-500/30 rounded-xl transition-all" 
+                    title="Delete Car"
+                  >
                     <Trash2 className="w-4.5 h-4.5" />
                   </button>
                 </div>
@@ -162,6 +185,55 @@ export default function AdminInventory() {
           <div className="p-12 text-center text-zinc-500 font-mono text-xs uppercase tracking-wider">No luxury vehicles found matching criteria.</div>
         )}
       </div>
+
+      {/* Confirmation Modal */}
+      {vehicleToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-zinc-950 border border-red-500/30 rounded-2xl p-6 max-w-md w-full space-y-5 shadow-2xl relative overflow-hidden">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-lg font-bold text-white font-serif tracking-wide uppercase">Confirm Delete</h3>
+                <p className="text-xs text-zinc-300 leading-relaxed font-sans">
+                  Are you sure you want to delete <strong className="text-white">{vehicleToDelete.year} {vehicleToDelete.make} {vehicleToDelete.model}</strong>?
+                </p>
+                <p className="text-[11px] text-zinc-400 leading-relaxed font-mono pt-1">
+                  This action will permanently delete the vehicle listing and remove all its photos from storage.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2 border-t border-white/10 font-mono text-xs font-bold uppercase tracking-wider">
+              <button
+                disabled={isDeleting}
+                onClick={() => setVehicleToDelete(null)}
+                className="px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-white/10 transition-all disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={isDeleting}
+                onClick={confirmDelete}
+                className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white flex items-center gap-2 transition-all shadow-lg hover:shadow-red-600/30 disabled:opacity-50"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    <span>Delete Car</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

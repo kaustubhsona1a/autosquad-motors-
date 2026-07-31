@@ -62,7 +62,6 @@ export default function AdminLayout() {
   const navItems = [
     { name: 'Dashboard', path: '/dealer-management', icon: LayoutDashboard },
     { name: 'Inventory', path: '/dealer-management/inventory', icon: CarFront },
-    { name: 'Leads', path: '/dealer-management/leads', icon: Users },
     { name: 'Site Settings', path: '/dealer-management/settings', icon: Settings },
   ];
 

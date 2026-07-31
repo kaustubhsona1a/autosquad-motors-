@@ -28,54 +28,51 @@ export function handleSupabaseError(error: unknown, operationType: OperationType
 export async function deleteImagesFromStorage(items: any[], bucket: string = 'vehicle-images'): Promise<void> {
   if (!items || items.length === 0) return;
 
-  const urls: string[] = [];
+  const rawUrls: string[] = [];
   items.forEach(item => {
     if (typeof item === 'string') {
-      let cleanItem = item;
-      if (item.includes('|||')) {
-        cleanItem = item.split('|||')[0];
-      }
-      urls.push(cleanItem);
+      let clean = item;
+      if (clean.includes('|||')) clean = clean.split('|||')[0];
+      rawUrls.push(clean);
     } else if (item && typeof item === 'object') {
-      let mainUrl = item.thumbnail_url || item.gallery_url || item.fullscreen_url || item.image_url;
-      if (mainUrl) {
-        if (typeof mainUrl === 'string' && mainUrl.includes('|||')) {
-          mainUrl = mainUrl.split('|||')[0];
-        }
-        urls.push(mainUrl);
+      let mainUrl = item.thumbnail_url || item.gallery_url || item.fullscreen_url || item.image_url || item.url;
+      if (typeof mainUrl === 'string') {
+        if (mainUrl.includes('|||')) mainUrl = mainUrl.split('|||')[0];
+        rawUrls.push(mainUrl);
       }
     }
   });
 
-  const paths = urls.map(url => {
+  const paths = rawUrls.map(url => {
+    if (!url) return null;
+    if (url.startsWith('data:') || url.startsWith('blob:')) return null;
+
     try {
-      const urlObj = new URL(url);
-      const pathname = urlObj.pathname;
-      
-      // Look for "/public/bucket_name/" case-insensitively
-      const publicIndex = pathname.toLowerCase().indexOf(`/public/${bucket.toLowerCase()}/`);
-      if (publicIndex !== -1) {
-        const splitStart = publicIndex + `/public/${bucket}/`.length;
-        return decodeURIComponent(pathname.substring(splitStart));
-      }
-      
-      // Alternate check for other Supabase URL structures (e.g. without /public/)
-      const bucketIndex = pathname.toLowerCase().indexOf(`/${bucket.toLowerCase()}/`);
-      if (bucketIndex !== -1) {
-        const splitStart = bucketIndex + `/${bucket}/`.length;
-        return decodeURIComponent(pathname.substring(splitStart));
+      let pathname = url;
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        pathname = new URL(url).pathname;
       }
 
-      // Fallback for custom domains or different URL formats
-      if (url.toLowerCase().includes(bucket.toLowerCase())) {
-        const fallbackSplit = url.split(new RegExp(bucket + '/', 'i'));
-        if (fallbackSplit.length > 1) {
-          return decodeURIComponent(fallbackSplit[1].split('?')[0]);
-        }
+      // Remove query parameters or hash
+      pathname = pathname.split('?')[0].split('#')[0];
+
+      const bucketPattern = `/${bucket.toLowerCase()}/`;
+      const lowerPath = pathname.toLowerCase();
+      const idx = lowerPath.indexOf(bucketPattern);
+
+      if (idx !== -1) {
+        const pathPart = pathname.substring(idx + bucketPattern.length);
+        return decodeURIComponent(pathPart);
       }
+
+      // Fallback for relative paths like "vehicles/123.webp" or "123.webp"
+      if (!url.startsWith('http') && !url.startsWith('/')) {
+        return decodeURIComponent(url.split('?')[0]);
+      }
+
       return null;
     } catch (e) {
-      console.warn('[PATH PARSE ERROR]', e, 'for url:', url);
+      console.warn('[STORAGE PURGE PARSE ERROR]', e, 'for url:', url);
       return null;
     }
   }).filter(Boolean) as string[];
@@ -85,9 +82,9 @@ export async function deleteImagesFromStorage(items: any[], bucket: string = 've
   if (paths.length > 0) {
     const { data, error } = await supabase.storage.from(bucket).remove(paths);
     if (error) {
-      console.error(`[STORAGE PURGE ERROR] Failed to delete images from bucket "${bucket}":`, error);
+      console.error(`[STORAGE PURGE ERROR] Failed to delete from bucket "${bucket}":`, error);
     } else {
-      console.log(`[STORAGE PURGE SUCCESS] Deleted from bucket "${bucket}":`, data);
+      console.log(`[STORAGE PURGE SUCCESS] Deleted ${data?.length || 0} objects from bucket "${bucket}":`, data);
     }
   }
 }
@@ -128,119 +125,61 @@ export async function cleanupLegacyImageVariants(bucket: string = 'vehicle-image
 export async function compressImageToWebP(
   file: File,
   maxDimension: number = 1440,
-  initialQuality: number = 0.86
+  initialQuality: number = 0.82
 ): Promise<File> {
   if (!file || !file.type.startsWith('image/') || file.type.includes('svg')) {
     return file;
   }
 
+  // Pass 1: Use browser-image-compression for EXIF orientation, HEIC decoding (iPhone photos),
+  // and multi-pass crisp downscaling without crashing iOS Safari Web Workers.
+  let compressedFile: File = file;
   try {
-    return await new Promise<File>((resolve) => {
+    const options = {
+      maxSizeMB: 0.22, // ~150-200 KB target size for high clarity & small size
+      maxWidthOrHeight: maxDimension,
+      useWebWorker: false, // Critical: iOS Safari Web Workers fail on canvas operations
+      fileType: 'image/webp',
+      initialQuality: initialQuality
+    };
+    compressedFile = await imageCompression(file, options);
+  } catch (err) {
+    console.warn('[compressImageToWebP] browser-image-compression failed:', err);
+  }
+
+  // If pass 1 produced valid webp, return it immediately
+  if (compressedFile && compressedFile.type === 'image/webp') {
+    const cleanName = file.name.replace(/\.[^/.]+$/, '');
+    return new File([compressedFile], `${cleanName}.webp`, {
+      type: 'image/webp',
+      lastModified: Date.now(),
+    });
+  }
+
+  // Pass 2: Canvas WebP conversion pass if compressedFile was output as JPEG (e.g. on iOS Safari)
+  try {
+    const webpBlob = await new Promise<Blob | null>((resolve) => {
       const img = new Image();
-      const objectUrl = URL.createObjectURL(file);
-
-      img.onload = async () => {
+      const objectUrl = URL.createObjectURL(compressedFile);
+      img.onload = () => {
         URL.revokeObjectURL(objectUrl);
-
-        let targetWidth = img.width;
-        let targetHeight = img.height;
-
-        // Downscale dimensions if exceeding maxDimension
-        if (targetWidth > maxDimension || targetHeight > maxDimension) {
-          if (targetWidth > targetHeight) {
-            targetHeight = Math.round((targetHeight * maxDimension) / targetWidth);
-            targetWidth = maxDimension;
-          } else {
-            targetWidth = Math.round((targetWidth * maxDimension) / targetHeight);
-            targetHeight = maxDimension;
-          }
-        }
-
-        // Multi-step downscaling (halving step-by-step)
-        // Single-step downscaling of 12MP-48MP iPhone photos causes severe softness/blur in browser canvas.
-        let curWidth = img.width;
-        let curHeight = img.height;
-
-        let curCanvas = document.createElement('canvas');
-        curCanvas.width = curWidth;
-        curCanvas.height = curHeight;
-        let ctx = curCanvas.getContext('2d');
-
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
         if (!ctx) {
-          resolve(file);
+          resolve(null);
           return;
         }
-
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(img, 0, 0, curWidth, curHeight);
+        ctx.drawImage(img, 0, 0);
 
-        // Halve step by step until near target size to preserve crisp edges and fine details
-        while (curWidth * 0.5 > targetWidth && curHeight * 0.5 > targetHeight) {
-          const nextWidth = Math.floor(curWidth * 0.5);
-          const nextHeight = Math.floor(curHeight * 0.5);
-
-          const nextCanvas = document.createElement('canvas');
-          nextCanvas.width = nextWidth;
-          nextCanvas.height = nextHeight;
-          const nextCtx = nextCanvas.getContext('2d');
-
-          if (nextCtx) {
-            nextCtx.imageSmoothingEnabled = true;
-            nextCtx.imageSmoothingQuality = 'high';
-            nextCtx.drawImage(curCanvas, 0, 0, curWidth, curHeight, 0, 0, nextWidth, nextHeight);
-            curCanvas = nextCanvas;
-            curWidth = nextWidth;
-            curHeight = nextHeight;
-          } else {
-            break;
-          }
-        }
-
-        // Final step canvas to target width & height
-        const finalCanvas = document.createElement('canvas');
-        finalCanvas.width = targetWidth;
-        finalCanvas.height = targetHeight;
-        const finalCtx = finalCanvas.getContext('2d');
-
-        if (!finalCtx) {
-          resolve(file);
-          return;
-        }
-
-        finalCtx.imageSmoothingEnabled = true;
-        finalCtx.imageSmoothingQuality = 'high';
-        finalCtx.drawImage(curCanvas, 0, 0, curWidth, curHeight, 0, 0, targetWidth, targetHeight);
-
-        // Helper to convert canvas to Blob
-        const createBlob = (q: number, mime: string): Promise<Blob | null> => {
-          return new Promise((res) => {
-            if (finalCanvas.toBlob) {
-              finalCanvas.toBlob((b) => res(b), mime, q);
-            } else {
-              try {
-                const dataUrl = finalCanvas.toDataURL(mime, q);
-                const byteString = atob(dataUrl.split(',')[1]);
-                const ab = new ArrayBuffer(byteString.length);
-                const ia = new Uint8Array(ab);
-                for (let i = 0; i < byteString.length; i++) {
-                  ia[i] = byteString.charCodeAt(i);
-                }
-                res(new Blob([ab], { type: mime }));
-              } catch (e) {
-                res(null);
-              }
-            }
-          });
-        };
-
-        let currentQuality = initialQuality;
-        let blob = await createBlob(currentQuality, 'image/webp');
-
-        // Check if browser produced a valid webp blob
-        if (!blob || !blob.type.includes('webp')) {
+        if (canvas.toBlob) {
+          canvas.toBlob((b) => resolve(b), 'image/webp', initialQuality);
+        } else {
           try {
-            const dataUrl = finalCanvas.toDataURL('image/webp', currentQuality);
+            const dataUrl = canvas.toDataURL('image/webp', initialQuality);
             if (dataUrl.startsWith('data:image/webp')) {
               const byteString = atob(dataUrl.split(',')[1]);
               const ab = new ArrayBuffer(byteString.length);
@@ -248,51 +187,41 @@ export async function compressImageToWebP(
               for (let i = 0; i < byteString.length; i++) {
                 ia[i] = byteString.charCodeAt(i);
               }
-              blob = new Blob([ab], { type: 'image/webp' });
+              resolve(new Blob([ab], { type: 'image/webp' }));
+            } else {
+              resolve(null);
             }
           } catch (e) {
-            console.warn('WebP dataUrl conversion failed, using fallback:', e);
+            resolve(null);
           }
-        }
-
-        // Target size check: if larger than 280KB, adjust quality down slightly (e.g. 0.78)
-        if (blob && blob.size > 280 * 1024 && currentQuality > 0.7) {
-          const refinedBlob = await createBlob(0.78, 'image/webp');
-          if (refinedBlob && refinedBlob.size < blob.size && refinedBlob.type.includes('webp')) {
-            blob = refinedBlob;
-          }
-        }
-
-        // Final safety fallback: if browser canvas doesn't support webp export, fallback to jpeg
-        if (!blob || blob.size === 0) {
-          blob = await createBlob(currentQuality, 'image/jpeg');
-        }
-
-        if (blob) {
-          const isWebp = blob.type.includes('webp');
-          const cleanName = file.name.replace(/\.[^/.]+$/, '');
-          const newFileName = `${cleanName}.${isWebp ? 'webp' : 'jpg'}`;
-          const finalFile = new File([blob], newFileName, {
-            type: isWebp ? 'image/webp' : 'image/jpeg',
-            lastModified: Date.now(),
-          });
-          resolve(finalFile);
-        } else {
-          resolve(file);
         }
       };
-
       img.onerror = () => {
         URL.revokeObjectURL(objectUrl);
-        resolve(file);
+        resolve(null);
       };
-
       img.src = objectUrl;
     });
-  } catch (err) {
-    console.warn('[compressImageToWebP] Compression exception, using original:', err);
-    return file;
+
+    if (webpBlob && webpBlob.size > 0) {
+      const cleanName = file.name.replace(/\.[^/.]+$/, '');
+      const isWebp = webpBlob.type.includes('webp');
+      return new File([webpBlob], `${cleanName}.${isWebp ? 'webp' : 'jpg'}`, {
+        type: isWebp ? 'image/webp' : 'image/jpeg',
+        lastModified: Date.now(),
+      });
+    }
+  } catch (e) {
+    console.warn('[compressImageToWebP] WebP canvas pass failed:', e);
   }
+
+  // Fallback: Return downscaled file with webp/jpeg ext
+  const cleanName = file.name.replace(/\.[^/.]+$/, '');
+  const isWebp = compressedFile.type.includes('webp');
+  return new File([compressedFile], `${cleanName}.${isWebp ? 'webp' : 'jpg'}`, {
+    type: isWebp ? 'image/webp' : (compressedFile.type || 'image/jpeg'),
+    lastModified: Date.now(),
+  });
 }
 
 export async function uploadImageToStorage(file: File, path: string, bucket: string = 'vehicle-images'): Promise<string> {

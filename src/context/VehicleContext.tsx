@@ -721,8 +721,33 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
     if (isSupabaseConfigured()) {
       incrementMetric('supabaseWrites');
       try {
-        if (vehicleToDelete?.images?.length) {
-          await deleteImagesFromStorage(vehicleToDelete.images, 'vehicle-images');
+        // Collect all image URLs from state and vehicle_images table to purge from storage bucket
+        const allImageUrls = new Set<string>();
+        if (vehicleToDelete?.images) {
+          vehicleToDelete.images.forEach(img => {
+            if (img) allImageUrls.add(img);
+          });
+        }
+
+        // Also fetch any saved image URLs directly from Supabase vehicle_images table
+        const { data: dbImages } = await supabase
+          .from('vehicle_images')
+          .select('*')
+          .eq('vehicle_id', targetId);
+
+        if (dbImages && Array.isArray(dbImages)) {
+          dbImages.forEach((row: any) => {
+            const url = row.image_url || row.url || row.gallery_url || row.thumbnail_url;
+            if (url && typeof url === 'string') {
+              allImageUrls.add(url);
+            }
+          });
+        }
+
+        const imagesToPurge = Array.from(allImageUrls);
+        if (imagesToPurge.length > 0) {
+          console.log(`[SUPABASE DELETE STORAGE] Purging ${imagesToPurge.length} image files from vehicle-images bucket for vehicle ${targetId}`);
+          await deleteImagesFromStorage(imagesToPurge, 'vehicle-images');
         }
         
         console.log('[SUPABASE DELETE WORKFLOW] Explicitly cleaning dependencies first:', targetId);
