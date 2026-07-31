@@ -92,10 +92,10 @@ export default function Home() {
           </div>
 
           {/* Browse Inventory Diamond Button (Positioned adjacent to logo on mobile & desktop) */}
-          <div className="diamond-btn-wrapper w-[145px] sm:w-[195px] md:w-[215px] h-[38px] sm:h-[42px] group shrink-0 relative z-30 my-1">
+          <div className="diamond-btn-wrapper w-[165px] sm:w-[215px] md:w-[235px] h-[44px] sm:h-[48px] md:h-[50px] group shrink-0 relative z-30 my-1">
             <Link 
               to="/inventory" 
-              className="diamond-btn-content text-[#D4AF37] hover:text-[#FCF6BA] font-bold tracking-[0.11em] sm:tracking-[0.14em] uppercase text-[10px] sm:text-xs font-serif px-2.5 sm:px-3 flex items-center justify-center whitespace-nowrap text-center"
+              className="diamond-btn-content text-[#D4AF37] hover:text-[#FCF6BA] font-bold tracking-[0.11em] sm:tracking-[0.14em] uppercase text-[11px] sm:text-xs md:text-sm font-serif px-3 sm:px-4 flex items-center justify-center whitespace-nowrap text-center"
             >
               <span className="whitespace-nowrap">Browse Inventory</span>
             </Link>
