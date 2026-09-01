@@ -135,30 +135,32 @@ export default function CustomerLayout() {
 
       {/* Global Fixed Showcase Background - Full clarity with slight dark tint luxury backdrop */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        {(siteConfig.homeHeroImage || siteConfig.homeHeroMobileImage) && (
-          <div className="absolute inset-0 overflow-hidden">
-            <picture className="w-full h-full block">
-              {siteConfig.homeHeroMobileImage && (
-                <source media="(max-width: 767px)" srcSet={siteConfig.homeHeroMobileImage} />
-              )}
-              <img 
-                src={siteConfig.homeHeroImage || siteConfig.homeHeroMobileImage} 
-                alt="Showroom Background" 
-                className={`w-full h-full object-cover object-center transition-all duration-700 ${
-                  isHomePage 
-                    ? (isScrolled ? 'opacity-70 brightness-50 blur-md scale-105' : 'opacity-100 brightness-100 blur-none scale-100')
-                    : 'opacity-65 brightness-45 blur-md scale-105'
-                }`}
-              />
-            </picture>
-            {/* Dark overlay gradient - crystal clear on top, blurred & darkened backdrop when scrolled or on subpages */}
-            <div className={`absolute inset-0 transition-all duration-700 ${
-              isHomePage 
-                ? (isScrolled ? 'bg-gradient-to-b from-[#02020a]/60 via-[#02020a]/75 to-[#02020a]/95' : 'bg-gradient-to-b from-black/20 via-transparent to-[#02020a]/30')
-                : 'bg-gradient-to-b from-[#02020a]/65 via-[#02020a]/80 to-[#02020a]/95'
-            }`} />
-          </div>
-        )}
+        <div className="absolute inset-0 overflow-hidden">
+          <picture className="w-full h-full block">
+            <source media="(max-width: 767px)" srcSet={siteConfig.homeHeroMobileImage || '/autosquad-hero.png'} />
+            <img 
+              src={siteConfig.homeHeroImage || '/autosquad-hero.png'} 
+              alt="AutoSquad Showroom Background" 
+              onError={(e) => {
+                const target = e.currentTarget as HTMLImageElement;
+                if (!target.src.endsWith('/autosquad-hero.png')) {
+                  target.src = '/autosquad-hero.png';
+                }
+              }}
+              className={`w-full h-full object-cover object-center transition-all duration-700 ${
+                isHomePage 
+                  ? (isScrolled ? 'opacity-70 brightness-50 blur-md scale-105' : 'opacity-100 brightness-100 blur-none scale-100')
+                  : 'opacity-65 brightness-45 blur-md scale-105'
+              }`}
+            />
+          </picture>
+          {/* Dark overlay gradient - crystal clear on top, blurred & darkened backdrop when scrolled or on subpages */}
+          <div className={`absolute inset-0 transition-all duration-700 ${
+            isHomePage 
+              ? (isScrolled ? 'bg-gradient-to-b from-[#02020a]/60 via-[#02020a]/75 to-[#02020a]/95' : 'bg-gradient-to-b from-black/20 via-transparent to-[#02020a]/30')
+              : 'bg-gradient-to-b from-[#02020a]/65 via-[#02020a]/80 to-[#02020a]/95'
+          }`} />
+        </div>
       </div>
 
       <div className="relative z-10 flex flex-col flex-grow min-h-screen">

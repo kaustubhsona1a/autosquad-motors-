@@ -1,0 +1,277 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <!-- Sunset Sky Gradient -->
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3B82F6" />
+      <stop offset="25%" stop-color="#60A5FA" />
+      <stop offset="45%" stop-color="#93C5FD" />
+      <stop offset="60%" stop-color="#FED7AA" />
+      <stop offset="75%" stop-color="#FDBA74" />
+      <stop offset="90%" stop-color="#FB923C" />
+      <stop offset="100%" stop-color="#EA580C" />
+    </linearGradient>
+
+    <!-- Sun Burst -->
+    <radialGradient id="sunGlow" cx="20%" cy="30%" r="60%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="1" />
+      <stop offset="10%" stop-color="#FFFBEB" stop-opacity="0.9" />
+      <stop offset="25%" stop-color="#FDE68A" stop-opacity="0.7" />
+      <stop offset="50%" stop-color="#F59E0B" stop-opacity="0.3" />
+      <stop offset="80%" stop-color="#D97706" stop-opacity="0.05" />
+      <stop offset="100%" stop-color="#B45309" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Mountain Gradients -->
+    <linearGradient id="mountFar" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#334155" stop-opacity="0.6" />
+      <stop offset="100%" stop-color="#1E293B" stop-opacity="0.9" />
+    </linearGradient>
+    <linearGradient id="mountMid" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1E3A5F" />
+      <stop offset="50%" stop-color="#1E293B" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </linearGradient>
+    <linearGradient id="mountNear" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2D3748" />
+      <stop offset="50%" stop-color="#1A202C" />
+      <stop offset="100%" stop-color="#0D1117" />
+    </linearGradient>
+
+    <!-- Sea Gradient -->
+    <linearGradient id="seaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#60A5FA" stop-opacity="0.8" />
+      <stop offset="30%" stop-color="#3B82F6" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#1E3A8A" />
+    </linearGradient>
+
+    <!-- Asphalt Road Gradient -->
+    <linearGradient id="roadGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#374151" />
+      <stop offset="40%" stop-color="#1F2937" />
+      <stop offset="80%" stop-color="#111827" />
+      <stop offset="100%" stop-color="#030712" />
+    </linearGradient>
+
+    <!-- BMW Metallic Blue Paint Gradient -->
+    <linearGradient id="bmwBluePaint" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563EB" />
+      <stop offset="25%" stop-color="#1D4ED8" />
+      <stop offset="55%" stop-color="#1E40AF" />
+      <stop offset="85%" stop-color="#172554" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </linearGradient>
+
+    <linearGradient id="bmwHighlight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#93C5FD" stop-opacity="0.9" />
+      <stop offset="30%" stop-color="#3B82F6" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#1E3A8A" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- Windshield Reflection -->
+    <linearGradient id="glassReflection" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284C7" stop-opacity="0.7" />
+      <stop offset="40%" stop-color="#1E293B" stop-opacity="0.9" />
+      <stop offset="70%" stop-color="#38BDF8" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#0F172A" stop-opacity="0.95" />
+    </linearGradient>
+
+    <!-- Headlight Angel Eye Glow -->
+    <radialGradient id="angelEyeGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="50%" stop-color="#E0F2FE" />
+      <stop offset="80%" stop-color="#38BDF8" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#0284C7" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Gold Sunset Rim Light -->
+    <linearGradient id="sunsetRim" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FDE047" stop-opacity="0.9" />
+      <stop offset="40%" stop-color="#F97316" stop-opacity="0.6" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+    </linearGradient>
+
+    <filter id="softGlow">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <filter id="sunBurst">
+      <feGaussianBlur stdDeviation="25" />
+    </filter>
+  </defs>
+
+  <!-- SKY -->
+  <rect width="1920" height="700" fill="url(#skyGrad)" />
+
+  <!-- SUN & SUN RAYS -->
+  <circle cx="280" cy="280" r="380" fill="url(#sunGlow)" filter="url(#sunBurst)" />
+  <circle cx="280" cy="280" r="50" fill="#FFFFFF" opacity="0.95" />
+  
+  <!-- Clouds & Atmospheric Shading -->
+  <path d="M 0,220 Q 180,180 350,220 T 700,200 T 1100,240 T 1500,200 T 1920,220 L 1920,400 L 0,400 Z" fill="#F8FAFC" opacity="0.45" />
+  <path d="M 0,160 Q 220,110 450,150 T 900,120 T 1400,160 T 1920,130 L 1920,320 L 0,320 Z" fill="#FEF08A" opacity="0.3" />
+  <path d="M 100,80 Q 250,40 420,70 T 750,50 T 1150,90 T 1600,60 T 1920,80 L 1920,240 L 0,240 Z" fill="#FFFFFF" opacity="0.5" />
+
+  <!-- DISTANT MOUNTAINS & SEA BAY -->
+  <polygon points="120,480 380,360 620,440 850,380 1100,450 1400,320 1680,410 1920,350 1920,550 0,550" fill="url(#mountFar)" />
+  
+  <!-- Coastal Bay Water -->
+  <path d="M 200,430 C 450,420 700,440 950,450 C 750,490 500,510 250,490 Z" fill="url(#seaGrad)" opacity="0.85" />
+  <ellipse cx="500" cy="460" rx="280" ry="16" fill="#FDE047" opacity="0.25" filter="url(#softGlow)" />
+
+  <!-- MIDGROUND MOUNTAINS & COASTAL CLIFFS -->
+  <polygon points="0,320 180,420 360,520 0,540" fill="url(#mountMid)" />
+  <polygon points="1200,340 1450,420 1680,330 1920,420 1920,620 1100,620" fill="url(#mountNear)" />
+
+  <!-- WINDING MOUNTAIN ROAD / HIGHWAY -->
+  <path d="M 0,620 C 350,580 800,520 1400,480 C 1700,490 1920,510 1920,550 L 1920,1080 L 0,1080 Z" fill="url(#roadGrad)" />
+  
+  <!-- Guardrail / Barrier on Left -->
+  <path d="M 0,610 Q 300,585 650,570" stroke="#94A3B8" stroke-width="12" fill="none" opacity="0.8" />
+  <path d="M 0,605 Q 300,580 650,565" stroke="#E2E8F0" stroke-width="4" fill="none" opacity="0.9" />
+
+  <!-- Road White Dashed Lines / Center Markers -->
+  <path d="M 1850,530 L 1920,540" stroke="#FFFFFF" stroke-width="4" opacity="0.7" />
+  <path d="M 1650,530 L 1750,545" stroke="#FFFFFF" stroke-width="6" opacity="0.8" />
+  <path d="M 1400,540 L 1520,565" stroke="#FFFFFF" stroke-width="8" opacity="0.85" />
+  <path d="M 1050,580 L 1220,625" stroke="#FFFFFF" stroke-width="12" opacity="0.9" />
+  <path d="M 600,665 L 850,740" stroke="#FFFFFF" stroke-width="16" opacity="0.9" />
+  <path d="M 0,810 L 280,920" stroke="#FFFFFF" stroke-width="22" opacity="0.95" />
+
+  <!-- SHADOW UNDER BMW -->
+  <ellipse cx="1020" cy="815" rx="560" ry="60" fill="#020617" opacity="0.9" />
+  <ellipse cx="980" cy="805" rx="480" ry="40" fill="#000000" opacity="0.95" />
+
+  <!-- ==================== BMW M-SPORT SEDAN (F10) ==================== -->
+  <g id="bmw-car">
+    <!-- CAR MAIN BODY SHELL (Metallic Royal Blue) -->
+    <!-- Cabin Roof, Pillars & Windshield -->
+    <path d="M 760,470 C 880,440 1150,440 1320,490 L 1490,560 C 1540,580 1560,610 1570,640 L 1550,710 L 400,700 L 420,640 C 450,580 600,510 760,470 Z" fill="url(#bmwBluePaint)" />
+
+    <!-- Roof & Windshield Glass -->
+    <path d="M 780,478 C 880,455 1120,455 1280,495 L 1400,555 C 1300,558 850,558 710,555 Z" fill="url(#glassReflection)" />
+    <!-- Windshield Sunset Highlight -->
+    <line x1="720" y1="550" x2="1260" y2="495" stroke="#FFFFFF" stroke-width="3" opacity="0.6" />
+
+    <!-- Side Windows & Gloss Black Trim -->
+    <path d="M 1290,500 L 1460,550 L 1450,580 L 1290,545 Z" fill="#0F172A" stroke="#1E293B" stroke-width="2" />
+    <path d="M 1270,500 L 1270,550" stroke="#1E293B" stroke-width="4" />
+
+    <!-- Driver Side Mirror -->
+    <path d="M 680,525 C 720,520 745,535 740,555 L 685,550 Z" fill="#1D4ED8" stroke="#1E40AF" stroke-width="1.5" />
+    <!-- Passenger Side Mirror -->
+    <path d="M 1480,535 C 1515,535 1530,550 1525,565 L 1475,560 Z" fill="#1D4ED8" />
+
+    <!-- HOOD / BONNET -->
+    <path d="M 440,635 C 550,565 800,550 1100,555 C 1350,560 1480,590 1530,645 L 1520,685 C 1300,695 650,695 440,675 Z" fill="url(#bmwBluePaint)" />
+    
+    <!-- Hood Sculpted Power Creases / Character Lines -->
+    <path d="M 720,560 L 620,660" stroke="#3B82F6" stroke-width="3" opacity="0.7" />
+    <path d="M 730,560 L 630,660" stroke="#172554" stroke-width="2" opacity="0.9" />
+    <path d="M 1180,560 L 1280,660" stroke="#3B82F6" stroke-width="3" opacity="0.7" />
+    <path d="M 1170,560 L 1270,660" stroke="#172554" stroke-width="2" opacity="0.9" />
+    <!-- Golden Sunset Rim Light on Hood / Driver Fender -->
+    <path d="M 440,635 C 520,590 700,560 900,555" stroke="url(#sunsetRim)" stroke-width="6" opacity="0.85" filter="url(#softGlow)" />
+
+    <!-- FRONT BUMPER & FASCIA (Aggressive M-Sport Aerodynamics) -->
+    <path d="M 400,665 C 500,680 800,695 1000,695 C 1200,695 1450,680 1550,665 L 1560,735 C 1530,775 1420,795 1250,805 C 1050,812 850,812 650,805 C 500,795 420,770 395,735 Z" fill="url(#bmwBluePaint)" />
+
+    <!-- Bumper Lower Splitter & Air Intakes (M-Sport Tri-Bumper Grilles) -->
+    <!-- Center Lower Intake -->
+    <polygon points="680,735 1220,735 1200,795 700,795" fill="#090D16" stroke="#1E293B" stroke-width="2" />
+    <line x1="700" y1="765" x2="1200" y2="765" stroke="#1E293B" stroke-width="2" />
+    <!-- Left Intake & Foglamp -->
+    <polygon points="440,710 630,725 615,785 460,765" fill="#090D16" stroke="#1E293B" stroke-width="2" />
+    <circle cx="530" cy="745" r="10" fill="#E2E8F0" opacity="0.8" />
+    <!-- Right Intake & Foglamp -->
+    <polygon points="1270,725 1460,710 1440,765 1285,785" fill="#090D16" stroke="#1E293B" stroke-width="2" />
+    <circle cx="1370" cy="745" r="10" fill="#E2E8F0" opacity="0.8" />
+
+    <!-- ICONIC BMW TWIN KIDNEY GRILLE (Gloss Black with Chrome Surrounds) -->
+    <!-- Left Kidney -->
+    <path d="M 720,640 C 720,630 820,630 835,640 L 830,705 C 815,715 730,715 720,705 Z" fill="#050811" stroke="#E2E8F0" stroke-width="3" />
+    <line x1="745" y1="635" x2="745" y2="708" stroke="#1E293B" stroke-width="3" />
+    <line x1="770" y1="634" x2="770" y2="710" stroke="#1E293B" stroke-width="3" />
+    <line x1="795" y1="635" x2="795" y2="708" stroke="#1E293B" stroke-width="3" />
+    <line x1="815" y1="637" x2="815" y2="705" stroke="#1E293B" stroke-width="3" />
+
+    <!-- Right Kidney -->
+    <path d="M 865,640 C 880,630 980,630 980,640 L 980,705 C 970,715 885,715 865,705 Z" fill="#050811" stroke="#E2E8F0" stroke-width="3" />
+    <line x1="885" y1="637" x2="885" y2="705" stroke="#1E293B" stroke-width="3" />
+    <line x1="905" y1="635" x2="905" y2="708" stroke="#1E293B" stroke-width="3" />
+    <line x1="930" y1="634" x2="930" y2="710" stroke="#1E293B" stroke-width="3" />
+    <line x1="955" y1="635" x2="955" y2="708" stroke="#1E293B" stroke-width="3" />
+
+    <!-- BMW Roundel Logo (Hood Center) -->
+    <g transform="translate(845, 620)">
+      <circle cx="10" cy="10" r="12" fill="#000000" stroke="#E2E8F0" stroke-width="1.5" />
+      <path d="M 10,0 A 10,10 0 0,1 20,10 L 10,10 Z" fill="#38BDF8" />
+      <path d="M 20,10 A 10,10 0 0,1 10,20 L 10,10 Z" fill="#FFFFFF" />
+      <path d="M 10,20 A 10,10 0 0,1 0,10 L 10,10 Z" fill="#38BDF8" />
+      <path d="M 0,10 A 10,10 0 0,1 10,0 L 10,10 Z" fill="#FFFFFF" />
+    </g>
+
+    <!-- HEADLIGHTS (Dual Corona Rings / Angel Eyes) -->
+    <!-- Left Headlight -->
+    <path d="M 460,645 L 680,650 L 670,695 L 490,685 Z" fill="#0F172A" stroke="#38BDF8" stroke-width="2" />
+    <circle cx="560" cy="670" r="16" fill="none" stroke="#FFFFFF" stroke-width="3.5" filter="url(#softGlow)" />
+    <circle cx="630" cy="672" r="15" fill="none" stroke="#FFFFFF" stroke-width="3.5" filter="url(#softGlow)" />
+    <path d="M 470,646 L 675,650" stroke="#E0F2FE" stroke-width="3" filter="url(#softGlow)" />
+
+    <!-- Right Headlight -->
+    <path d="M 1020,650 L 1240,645 L 1210,685 L 1030,695 Z" fill="#0F172A" stroke="#38BDF8" stroke-width="2" />
+    <circle cx="1070" cy="672" r="15" fill="none" stroke="#FFFFFF" stroke-width="3.5" filter="url(#softGlow)" />
+    <circle cx="1140" cy="670" r="16" fill="none" stroke="#FFFFFF" stroke-width="3.5" filter="url(#softGlow)" />
+    <path d="M 1025,650 L 1230,646" stroke="#E0F2FE" stroke-width="3" filter="url(#softGlow)" />
+
+    <!-- AUTOSQUAD NUMBER PLATE -->
+    <g transform="translate(735, 705)">
+      <!-- Plate Frame (White with Black Border) -->
+      <rect x="0" y="0" width="230" height="52" rx="4" fill="#FFFFFF" stroke="#000000" stroke-width="3" />
+      
+      <!-- EU Blue Country Strip on Left -->
+      <rect x="0" y="0" width="28" height="52" rx="2" fill="#003399" />
+      <!-- M Flag Tri-Color Accent on Euro Strip -->
+      <rect x="5" y="32" width="5" height="12" fill="#0099FF" />
+      <rect x="10" y="32" width="5" height="12" fill="#000080" />
+      <rect x="15" y="32" width="5" height="12" fill="#E60000" />
+      
+      <!-- AUTOSQUAD Text -->
+      <text x="126" y="36" font-family="'Orbitron', 'Plus Jakarta Sans', 'Arial Black', sans-serif" font-size="25" font-weight="900" font-style="italic" letter-spacing="3.5" fill="#0A0A0A" text-anchor="middle">
+        AUTOSQUAD
+      </text>
+    </g>
+
+    <!-- WHEELS & TIRES -->
+    <!-- Left Front Wheel (M Double-Spoke Alloy Rim) -->
+    <g transform="translate(480, 680)">
+      <ellipse cx="80" cy="90" rx="65" ry="55" fill="#0B0F17" stroke="#1E293B" stroke-width="8" />
+      <!-- Rim Face -->
+      <ellipse cx="80" cy="90" rx="48" ry="40" fill="#334155" stroke="#94A3B8" stroke-width="3" />
+      <!-- Blue M Brake Caliper -->
+      <path d="M 50,75 C 50,65 60,60 70,62 L 65,80 Z" fill="#2563EB" />
+      <!-- Twin Spokes -->
+      <line x1="80" y1="90" x2="45" y2="70" stroke="#CBD5E1" stroke-width="4" />
+      <line x1="80" y1="90" x2="55" y2="115" stroke="#CBD5E1" stroke-width="4" />
+      <line x1="80" y1="90" x2="105" y2="120" stroke="#CBD5E1" stroke-width="4" />
+      <line x1="80" y1="90" x2="115" y2="75" stroke="#CBD5E1" stroke-width="4" />
+      <line x1="80" y1="90" x2="80" y2="52" stroke="#CBD5E1" stroke-width="4" />
+      <circle cx="80" cy="90" r="10" fill="#0F172A" stroke="#E2E8F0" stroke-width="1.5" />
+    </g>
+
+    <!-- Right Rear Wheel -->
+    <g transform="translate(1380, 600)">
+      <ellipse cx="50" cy="70" rx="45" ry="40" fill="#0B0F17" stroke="#1E293B" stroke-width="6" />
+      <ellipse cx="50" cy="70" rx="32" ry="28" fill="#334155" stroke="#94A3B8" stroke-width="2.5" />
+      <circle cx="50" cy="70" r="7" fill="#0F172A" />
+    </g>
+  </g>
+
+  <!-- Vignette Edge Gradient for Clean Dashboard Text Contrast -->
+  <linearGradient id="vignetteGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+    <stop offset="0%" stop-color="#020205" stop-opacity="0.5" />
+    <stop offset="25%" stop-color="#020205" stop-opacity="0" />
+    <stop offset="70%" stop-color="#020205" stop-opacity="0.1" />
+    <stop offset="100%" stop-color="#020205" stop-opacity="0.8" />
+  </linearGradient>
+  <rect width="1920" height="1080" fill="url(#vignetteGrad)" />
+</svg>

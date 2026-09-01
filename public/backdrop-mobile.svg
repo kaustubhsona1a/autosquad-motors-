@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <!-- Background Dark Gradient -->
+    <linearGradient id="mobBgGrad" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#05050A" />
+      <stop offset="30%" stop-color="#080814" />
+      <stop offset="65%" stop-color="#030308" />
+      <stop offset="100%" stop-color="#010103" />
+    </linearGradient>
+
+    <!-- Floor Reflection Gradient -->
+    <linearGradient id="mobFloorGrad" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#141422" stop-opacity="0.95" />
+      <stop offset="35%" stop-color="#080810" stop-opacity="0.98" />
+      <stop offset="100%" stop-color="#020204" stop-opacity="1" />
+    </linearGradient>
+
+    <!-- Warm Golden Ambient Spotlights -->
+    <radialGradient id="mobGoldSpot" cx="50%" cy="30%" r="55%">
+      <stop offset="0%" stop-color="#C8A64A" stop-opacity="0.22" />
+      <stop offset="45%" stop-color="#8F6C25" stop-opacity="0.08" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+    </radialGradient>
+
+    <linearGradient id="mobLightStrip" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0" />
+      <stop offset="30%" stop-color="#F5ECC8" stop-opacity="0.4" />
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.7" />
+      <stop offset="70%" stop-color="#F5ECC8" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
+    </linearGradient>
+
+    <pattern id="mobFloorGrid" width="60" height="30" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="60" y2="0" stroke="#C8A64A" stroke-opacity="0.04" stroke-width="1" />
+      <line x1="0" y1="0" x2="0" y2="30" stroke="#C8A64A" stroke-opacity="0.04" stroke-width="1" />
+    </pattern>
+
+    <filter id="mobBlur">
+      <feGaussianBlur stdDeviation="30" />
+    </filter>
+    <filter id="mobGlow">
+      <feGaussianBlur stdDeviation="5" />
+    </filter>
+  </defs>
+
+  <!-- Base Dark Canvas -->
+  <rect width="1080" height="1920" fill="url(#mobBgGrad)" />
+
+  <!-- Ambient Golden Glow -->
+  <circle cx="540" cy="550" r="480" fill="url(#mobGoldSpot)" />
+
+  <!-- Studio Ceiling Light Array -->
+  <ellipse cx="540" cy="320" rx="380" ry="6" fill="url(#mobLightStrip)" filter="url(#mobGlow)" />
+  <ellipse cx="540" cy="320" rx="440" ry="24" fill="url(#mobLightStrip)" opacity="0.25" filter="url(#mobBlur)" />
+
+  <!-- Showroom Reflective Floor -->
+  <rect x="0" y="980" width="1080" height="940" fill="url(#mobFloorGrad)" />
+  <rect x="0" y="980" width="1080" height="940" fill="url(#mobFloorGrid)" opacity="0.7" />
+
+  <!-- Floor Horizon Light Beam -->
+  <line x1="0" y1="980" x2="1080" y2="980" stroke="url(#mobLightStrip)" stroke-width="1.5" stroke-opacity="0.5" />
+  <line x1="120" y1="980" x2="960" y2="980" stroke="#E2B738" stroke-width="2" stroke-opacity="0.6" filter="url(#mobGlow)" />
+
+  <!-- Mobile Exotic Car Silhouette -->
+  <g transform="translate(240, 780)" opacity="0.75">
+    <ellipse cx="300" cy="185" rx="340" ry="24" fill="#000000" opacity="0.95" />
+    <ellipse cx="300" cy="195" rx="280" ry="14" fill="#C8A64A" opacity="0.16" filter="url(#mobGlow)" />
+
+    <path d="M 40,150 C 100,145 150,120 220,95 C 280,70 410,68 460,95 C 500,118 550,135 580,150 L 560,165 C 510,168 470,165 430,165 C 400,145 360,145 330,165 C 260,165 210,165 170,165 C 150,145 110,145 90,165 Z" fill="#0A0A12" stroke="#C8A64A" stroke-width="1.5" stroke-opacity="0.6" />
+    
+    <path d="M 190,105 C 250,78 380,75 440,100" fill="none" stroke="#FFFFFF" stroke-width="1.5" stroke-opacity="0.8" filter="url(#mobGlow)" />
+    
+    <!-- LED Headlight / Tail Glimmer -->
+    <path d="M 50,149 L 130,146" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" filter="url(#mobGlow)" opacity="0.9" />
+    <path d="M 480,146 L 565,149" stroke="#E2B738" stroke-width="2.5" stroke-linecap="round" filter="url(#mobGlow)" opacity="0.8" />
+  </g>
+
+  <!-- Floor Lighting Reflection Pool -->
+  <ellipse cx="540" cy="1200" rx="420" ry="90" fill="url(#mobLightStrip)" opacity="0.1" filter="url(#mobBlur)" />
+  <ellipse cx="540" cy="1260" rx="360" ry="80" fill="url(#mobGoldSpot)" opacity="0.4" filter="url(#mobBlur)" />
+
+  <!-- Vignette -->
+  <rect width="1080" height="1920" fill="none" stroke="#000000" stroke-width="50" opacity="0.8" />
+</svg>

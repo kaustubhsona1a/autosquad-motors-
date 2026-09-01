@@ -60,20 +60,39 @@ interface VehicleContextType {
 
 const VehicleContext = createContext<VehicleContextType | undefined>(undefined);
 
+export const BUNDLED_LOGO = '/autosquad-logo.png';
+export const BUNDLED_HERO_IMAGE = '/autosquad-hero.png';
+export const BUNDLED_HERO_MOBILE_IMAGE = '/autosquad-hero.png';
+
 const DEFAULT_CONFIG: SiteConfig = {
   aboutImage: '',
-  homeHeroImage: '',
+  homeHeroImage: BUNDLED_HERO_IMAGE,
+  homeHeroMobileImage: BUNDLED_HERO_MOBILE_IMAGE,
   homeHeroVideo: '',
   homeHeroMobileVideo: '',
-  homeHeroType: 'video',
-  logo: '/logo.png',
+  homeHeroType: 'image',
+  logo: BUNDLED_LOGO,
   clientDeliveries: [],
   instagramReels: []
 };
 
 export function sanitizeHeroImage(path: string | undefined): string {
-  if (!path || path === '/backdrop.jpg' || path.trim() === '') {
-    return "";
+  if (!path || path.trim() === '' || path.includes('supabase.co/storage/v1/object/public/site_settings')) {
+    return BUNDLED_HERO_IMAGE;
+  }
+  return path;
+}
+
+export function sanitizeHeroMobileImage(path: string | undefined): string {
+  if (!path || path.trim() === '' || path.includes('supabase.co/storage/v1/object/public/site_settings')) {
+    return BUNDLED_HERO_MOBILE_IMAGE;
+  }
+  return path;
+}
+
+export function sanitizeLogo(path: string | undefined): string {
+  if (!path || path.trim() === '' || path.includes('supabase.co/storage/v1/object/public/site_settings')) {
+    return BUNDLED_LOGO;
   }
   return path;
 }
@@ -323,7 +342,13 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
       }
       
       if (cachedConfig) {
-        setSiteConfig(cachedConfig);
+        const sanitizedCachedConfig: SiteConfig = {
+          ...cachedConfig,
+          homeHeroImage: sanitizeHeroImage(cachedConfig.homeHeroImage),
+          homeHeroMobileImage: sanitizeHeroMobileImage(cachedConfig.homeHeroMobileImage),
+          logo: sanitizeLogo(cachedConfig.logo),
+        };
+        setSiteConfig(sanitizedCachedConfig);
       } else {
         setSiteConfig(DEFAULT_CONFIG);
       }
@@ -398,11 +423,11 @@ export function VehicleProvider({ children }: { children: ReactNode }) {
               id: siteData.id,
               aboutImage: sanitizeAboutImage(fetchedAboutImage),
               homeHeroImage: sanitizeHeroImage(siteData.homeHeroImage || siteData.home_hero_image_url || siteData.home_hero_image || DEFAULT_CONFIG.homeHeroImage),
-              homeHeroMobileImage: fetchedHomeHeroMobileImage,
+              homeHeroMobileImage: sanitizeHeroMobileImage(fetchedHomeHeroMobileImage || siteData.home_hero_mobile_image_url || siteData.home_hero_mobile_image),
               homeHeroVideo: fetchedHomeHeroVideo,
               homeHeroMobileVideo: fetchedHomeHeroMobileVideo,
               homeHeroType: fetchedHomeHeroType,
-              logo: siteData.logo || siteData.logo_url || DEFAULT_CONFIG.logo,
+              logo: sanitizeLogo(siteData.logo || siteData.logo_url || DEFAULT_CONFIG.logo),
               clientDeliveries: fetchedClientDeliveries || DEFAULT_CONFIG.clientDeliveries,
               instagramReels: fetchedInstagramReels || DEFAULT_CONFIG.instagramReels || []
             };

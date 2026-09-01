@@ -192,20 +192,36 @@ export default function AdminSettings() {
         
         {/* Logo Section */}
         <div>
-          <h2 className="text-sm font-bold font-serif text-white mb-1 uppercase tracking-widest">Showroom Brand Logo</h2>
-          <p className="text-zinc-500 text-[10px] uppercase font-mono tracking-wider mb-6">Updates logo displayed inside primary front-end header and footer bars.</p>
+          <div className="flex items-center space-x-2 mb-1">
+            <h2 className="text-sm font-bold font-serif text-white uppercase tracking-widest">Showroom Brand Logo</h2>
+            <span className="bg-emerald-500/10 text-emerald-400 text-[8px] font-bold font-mono px-2 py-0.5 rounded tracking-wider uppercase border border-emerald-500/20">0 Egress Build Asset</span>
+          </div>
+          <p className="text-zinc-500 text-[10px] uppercase font-mono tracking-wider mb-6">Bundled in the frontend build for instant loading with zero Supabase storage egress.</p>
           <div className="flex flex-col md:flex-row items-stretch md:items-start gap-6">
             <div className="w-52 h-24 overflow-hidden rounded-xl border border-white/5 flex items-center justify-center p-4 bg-black/40 shrink-0 shadow-inner">
-              <img src={siteConfig.logo} alt="Logo Preview" className="max-h-16 max-w-full object-contain" />
+              <img src={siteConfig.logo || '/autosquad-logo.png'} alt="Logo Preview" className="max-h-16 max-w-full object-contain" />
             </div>
             <div className="flex-grow space-y-4">
-              <label className="block w-full cursor-pointer bg-zinc-900/25 border-2 border-dashed border-white/10 hover:border-white hover:bg-white/5 rounded-xl p-6 transition-all text-center">
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    updateSiteConfig({ logo: '/autosquad-logo.png' });
+                    setSuccess('Logo reset to built-in build asset!');
+                    setTimeout(() => setSuccess(''), 3000);
+                  }}
+                  className="px-4 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[10px] font-bold font-mono uppercase tracking-wider border border-white/10 transition-all"
+                >
+                  Use Built-in Logo
+                </button>
+              </div>
+              <label className="block w-full cursor-pointer bg-zinc-900/25 border-2 border-dashed border-white/10 hover:border-white hover:bg-white/5 rounded-xl p-4 transition-all text-center">
                 <input type="file" accept="image/*" className="hidden" disabled={isCompressing} onChange={(e) => handleImageUpload(e, 'logo')} />
-                <UploadCloud className="w-8 h-8 text-zinc-500 mx-auto mb-2" />
+                <UploadCloud className="w-6 h-6 text-zinc-500 mx-auto mb-1.5" />
                 <p className="text-xs font-bold text-white font-mono uppercase tracking-wider">
-                  {isCompressing ? 'Compacting Logo...' : 'Upload New Logo'}
+                  {isCompressing ? 'Compacting Logo...' : 'Upload Custom Logo'}
                 </p>
-                <p className="text-[10px] text-zinc-500 font-mono mt-0.5 uppercase tracking-wider">Supports PNG or SVGs (automatically compressed)</p>
+                <p className="text-[10px] text-zinc-500 font-mono mt-0.5 uppercase tracking-wider">Supports PNG or SVG</p>
               </label>
             </div>
           </div>
@@ -218,28 +234,34 @@ export default function AdminSettings() {
           <div className="flex items-center space-x-2 mb-1">
             <h2 className="text-sm font-serif font-bold text-white uppercase tracking-widest">Home Page Background Photo (Desktop)</h2>
             <span className="bg-white/10 text-white text-[8px] font-bold font-mono px-2 py-0.5 rounded tracking-wider uppercase border border-white/15">Desktop</span>
-            <span className="bg-white text-zinc-950 text-[8px] font-bold font-mono px-2 py-0.5 rounded tracking-wider uppercase">Active</span>
+            <span className="bg-emerald-500/10 text-emerald-400 text-[8px] font-bold font-mono px-2 py-0.5 rounded tracking-wider uppercase border border-emerald-500/20">0 Egress Build Asset</span>
           </div>
-          <p className="text-zinc-500 text-[10px] uppercase font-mono tracking-wider mb-6">High-resolution horizontal showcase image displayed as the desktop homepage background.</p>
+          <p className="text-zinc-500 text-[10px] uppercase font-mono tracking-wider mb-6">High-resolution showcase backdrop bundled in build to eliminate Supabase egress charges.</p>
           <div className="flex flex-col md:flex-row items-stretch md:items-start gap-6">
             <div className="w-52 aspect-video overflow-hidden rounded-xl border border-white/5 bg-zinc-900/30 shrink-0 relative shadow-sm flex items-center justify-center">
-              {siteConfig.homeHeroImage ? (
-                <img src={siteConfig.homeHeroImage} className="w-full h-full object-cover" alt="Hero Desktop Backdrop" />
-              ) : (
-                <div className="text-center p-4">
-                  <p className="text-[10px] text-zinc-500 font-mono uppercase">No photo configured</p>
-                  <p className="text-[8px] text-zinc-600 font-mono mt-1">Default dark solid background will show</p>
-                </div>
-              )}
+              <img src={siteConfig.homeHeroImage || '/autosquad-hero.png'} className="w-full h-full object-cover" alt="Hero Desktop Backdrop" />
             </div>
             <div className="flex-grow space-y-4">
-              <label className="block w-full cursor-pointer bg-zinc-900/25 border-2 border-dashed border-white/10 hover:border-white hover:bg-white/5 rounded-xl p-6 transition-all text-center">
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    updateSiteConfig({ homeHeroImage: '/autosquad-hero.png' });
+                    setSuccess('Desktop backdrop reset to built-in build asset!');
+                    setTimeout(() => setSuccess(''), 3000);
+                  }}
+                  className="px-4 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[10px] font-bold font-mono uppercase tracking-wider border border-white/10 transition-all"
+                >
+                  Use Built-in Desktop Backdrop
+                </button>
+              </div>
+              <label className="block w-full cursor-pointer bg-zinc-900/25 border-2 border-dashed border-white/10 hover:border-white hover:bg-white/5 rounded-xl p-4 transition-all text-center">
                 <input type="file" accept="image/*" className="hidden" disabled={isCompressing} onChange={(e) => handleImageUpload(e, 'homeHeroImage')} />
-                <UploadCloud className="w-8 h-8 text-zinc-500 mx-auto mb-2" />
+                <UploadCloud className="w-6 h-6 text-zinc-500 mx-auto mb-1.5" />
                 <p className="text-xs font-bold text-white font-mono uppercase tracking-wider">
-                  {isCompressing ? 'Uploading Photo...' : 'Upload Showroom Background Photo'}
+                  {isCompressing ? 'Uploading Photo...' : 'Upload Custom Showroom Backdrop'}
                 </p>
-                <p className="text-[10px] text-zinc-550 font-mono mt-0.5 uppercase tracking-wider">Supports JPG, PNG format files (uploads directly to Supabase)</p>
+                <p className="text-[10px] text-zinc-500 font-mono mt-0.5 uppercase tracking-wider">Supports JPG, PNG, WebP</p>
               </label>
             </div>
           </div>
@@ -252,28 +274,34 @@ export default function AdminSettings() {
           <div className="flex items-center space-x-2 mb-1">
             <h2 className="text-sm font-serif font-bold text-white uppercase tracking-widest">Home Page Background Photo (Mobile)</h2>
             <span className="bg-white/10 text-white text-[8px] font-bold font-mono px-2 py-0.5 rounded tracking-wider uppercase border border-white/15">Mobile</span>
-            <span className="bg-white text-zinc-950 text-[8px] font-bold font-mono px-2 py-0.5 rounded tracking-wider uppercase">Active</span>
+            <span className="bg-emerald-500/10 text-emerald-400 text-[8px] font-bold font-mono px-2 py-0.5 rounded tracking-wider uppercase border border-emerald-500/20">0 Egress Build Asset</span>
           </div>
-          <p className="text-zinc-500 text-[10px] uppercase font-mono tracking-wider mb-6">Optional portrait showcase image optimized for mobile devices.</p>
+          <p className="text-zinc-500 text-[10px] uppercase font-mono tracking-wider mb-6">Portrait showcase backdrop bundled in build optimized for mobile displays.</p>
           <div className="flex flex-col md:flex-row items-stretch md:items-start gap-6">
             <div className="w-52 h-44 overflow-hidden rounded-xl border border-white/5 bg-zinc-900/30 shrink-0 relative shadow-sm flex items-center justify-center">
-              {siteConfig.homeHeroMobileImage ? (
-                <img src={siteConfig.homeHeroMobileImage} className="w-full h-full object-cover" alt="Hero Mobile Backdrop" />
-              ) : (
-                <div className="text-center p-4">
-                  <p className="text-[10px] text-zinc-500 font-mono uppercase">No mobile photo</p>
-                  <p className="text-[8px] text-zinc-600 font-mono mt-1">Falls back to Desktop Photo</p>
-                </div>
-              )}
+              <img src={siteConfig.homeHeroMobileImage || '/autosquad-hero.png'} className="w-full h-full object-cover" alt="Hero Mobile Backdrop" />
             </div>
             <div className="flex-grow space-y-4">
-              <label className="block w-full cursor-pointer bg-zinc-900/25 border-2 border-dashed border-white/10 hover:border-white hover:bg-white/5 rounded-xl p-6 transition-all text-center">
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    updateSiteConfig({ homeHeroMobileImage: '/autosquad-hero.png' });
+                    setSuccess('Mobile backdrop reset to built-in build asset!');
+                    setTimeout(() => setSuccess(''), 3000);
+                  }}
+                  className="px-4 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[10px] font-bold font-mono uppercase tracking-wider border border-white/10 transition-all"
+                >
+                  Use Built-in Mobile Backdrop
+                </button>
+              </div>
+              <label className="block w-full cursor-pointer bg-zinc-900/25 border-2 border-dashed border-white/10 hover:border-white hover:bg-white/5 rounded-xl p-4 transition-all text-center">
                 <input type="file" accept="image/*" className="hidden" disabled={isCompressing} onChange={(e) => handleImageUpload(e, 'homeHeroMobileImage')} />
-                <UploadCloud className="w-8 h-8 text-zinc-500 mx-auto mb-2" />
+                <UploadCloud className="w-6 h-6 text-zinc-500 mx-auto mb-1.5" />
                 <p className="text-xs font-bold text-white font-mono uppercase tracking-wider">
-                  {isCompressing ? 'Uploading Mobile Photo...' : 'Upload Mobile Background Photo'}
+                  {isCompressing ? 'Uploading Mobile Photo...' : 'Upload Custom Mobile Backdrop'}
                 </p>
-                <p className="text-[10px] text-zinc-550 font-mono mt-0.5 uppercase tracking-wider">Supports JPG, PNG format files (uploads directly to Supabase)</p>
+                <p className="text-[10px] text-zinc-500 font-mono mt-0.5 uppercase tracking-wider">Supports JPG, PNG, WebP</p>
               </label>
             </div>
           </div>
